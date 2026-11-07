@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="WAYLINE RADIO — multi-tenant internet radio for trucking and logistics companies. Phase 1 frontend demonstration.">
+  <title>WAYLINE RADIO — Fleet Radio Network</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="public">
+
+  <!-- ===== Icon sprite ===== -->
+  <svg class="svg-sprite" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="i-radio" viewBox="0 0 24 24"><rect x="2" y="8" width="20" height="13" rx="3"></rect><path d="M6 8l12-5"></path><circle cx="8.5" cy="14.5" r="2.5"></circle><path d="M14 12.5h5M14 16h5"></path></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><polygon points="7 4 20 12 7 20 7 4" fill="currentColor" stroke="none"></polygon></symbol>
+      <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"></rect><rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"></rect></symbol>
+      <symbol id="i-prev" viewBox="0 0 24 24"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></symbol>
+      <symbol id="i-next" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></symbol>
+      <symbol id="i-volume" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M18.5 5.5a9 9 0 0 1 0 13"></path></symbol>
+      <symbol id="i-volume-x" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.6" y2="16.6"></line></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></symbol>
+      <symbol id="i-up" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></symbol>
+      <symbol id="i-down" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></symbol>
+      <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path></symbol>
+      <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="16" y1="3" x2="16" y2="7"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="3" y1="11" x2="21" y2="11"></line></symbol>
+      <symbol id="i-announce" viewBox="0 0 24 24"><path d="M3 10v4a1 1 0 0 0 1 1h2l4 4V5L6 9H4a1 1 0 0 0-1 1z"></path><path d="M14 8.5a4 4 0 0 1 0 7"></path><path d="M17 6a8 8 0 0 1 0 12"></path></symbol>
+      <symbol id="i-rss" viewBox="0 0 24 24"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1.5" fill="currentColor" stroke="none"></circle></symbol>
+      <symbol id="i-queue" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><circle cx="3.5" cy="6" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="3.5" cy="12" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="3.5" cy="18" r="1.2" fill="currentColor" stroke="none"></circle></symbol>
+      <symbol id="i-building" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1.5"></rect><line x1="8" y1="7" x2="10" y2="7"></line><line x1="14" y1="7" x2="16" y2="7"></line><line x1="8" y1="11" x2="10" y2="11"></line><line x1="14" y1="11" x2="16" y2="11"></line><line x1="8" y1="15" x2="10" y2="15"></line><line x1="14" y1="15" x2="16" y2="15"></line><path d="M10 21v-3h4v3"></path></symbol>
+      <symbol id="i-chart" viewBox="0 0 24 24"><line x1="3" y1="21" x2="21" y2="21"></line><rect x="5" y="11" width="3" height="7"></rect><rect x="10.5" y="7" width="3" height="11"></rect><rect x="16" y="4" width="3" height="14"></rect></symbol>
+      <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0"></path><path d="M16 5.5a3.5 3.5 0 0 1 0 6.8"></path><path d="M18 14.5a5.5 5.5 0 0 1 3.5 5"></path></symbol>
+      <symbol id="i-signal" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"></circle><path d="M7.8 16.2a6 6 0 0 1 0-8.4"></path><path d="M16.2 7.8a6 6 0 0 1 0 8.4"></path><path d="M4.9 19.1a10 10 0 0 1 0-14.2"></path><path d="M19.1 4.9a10 10 0 0 1 0 14.2"></path></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15.5 14"></polyline></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 17H2L12 3z"></path><line x1="12" y1="9" x2="12" y2="14"></line><circle cx="12" cy="17.2" r="0.9" fill="currentColor" stroke="none"></circle></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></symbol>
+      <symbol id="i-external" viewBox="0 0 24 24"><path d="M18 13v6H5V6h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></symbol>
+    </defs>
+  </svg>
+
+  <!-- ===== Top bar ===== -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html" aria-label="WAYLINE RADIO home">
+        <span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#i-radio"></use></svg></span>
+        <span class="brand-text">WAYLINE<span>RADIO</span></span>
+      </a>
+      <div class="topbar-actions">
+        <label class="select-wrap">
+          <span class="select-label">Station</span>
+          <select id="stationSelect" aria-label="Select company station"></select>
+        </label>
+        <a class="btn btn-ghost" href="admin.html">Admin</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="page container">
+
+    <!-- ===== Player ===== -->
+    <section class="player-card" id="playerCard" aria-label="Radio player">
+      <div class="player-station">
+        <div class="station-avatar" id="stationAvatar">—</div>
+        <div class="station-meta">
+          <h1 id="stationName">—</h1>
+          <p id="stationTagline">—</p>
+          <div class="station-status-row">
+            <span class="status-pill is-offline" id="stationStatus"><span class="dot"></span><span class="label">OFFLINE</span></span>
+            <span class="meta-item"><svg class="icon" aria-hidden="true"><use href="#i-users"></use></svg><span id="stationListeners">0</span></span>
+            <span class="meta-item"><svg class="icon" aria-hidden="true"><use href="#i-signal"></use></svg><span id="stationBitrate">—</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="player-main">
+        <div class="now-playing">
+          <div class="cover" id="nowCover">♪</div>
+          <div class="now-meta">
+            <span class="eyebrow">Now playing</span>
+            <h2 id="nowTitle">Select a track to start listening</h2>
+            <p id="nowArtist">—</p>
+            <span class="badge" id="nowCategory">Station</span>
+          </div>
+        </div>
+
+        <div class="progress-row">
+          <span class="time" id="timeCurrent">0:00</span>
+          <input type="range" id="seekBar" min="0" max="1000" value="0" step="1" aria-label="Seek within track">
+          <span class="time" id="timeTotal">0:00</span>
+        </div>
+
+        <div class="controls-row">
+          <div class="transport">
+            <button class="btn-icon" id="prevBtn" type="button" aria-label="Previous track">
+              <svg class="icon" aria-hidden="true"><use href="#i-prev"></use></svg>
+            </button>
+            <button class="play-btn" id="playBtn" type="button" aria-label="Play">
+              <svg class="icon" aria-hidden="true"><use href="#i-play"></use></svg>
+            </button>
+            <button class="btn-icon" id="nextBtn" type="button" aria-label="Next track">
+              <svg class="icon" aria-hidden="true"><use href="#i-next"></use></svg>
+            </button>
+          </div>
+          <div class="volume">
+            <button class="btn-icon" id="muteBtn" type="button" aria-label="Mute">
+              <svg class="icon" aria-hidden="true"><use href="#i-volume"></use></svg>
+            </button>
+            <input type="range" id="volumeBar" min="0" max="100" value="80" aria-label="Volume">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Music library ===== -->
+    <section class="library" aria-labelledby="libraryHeading">
+      <div class="section-head">
+        <div>
+          <h2 id="libraryHeading">Music library</h2>
+          <p class="section-sub">Categorized tracks and segments for the selected company station.</p>
+        </div>
+        <div class="library-tools">
+          <div class="search-field">
+            <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
+            <input type="search" id="searchInput" placeholder="Search title or artist" aria-label="Search music library">
+          </div>
+          <span class="result-count" id="resultCount">0 tracks</span>
+        </div>
+      </div>
+
+      <div class="category-tabs" id="categoryTabs" role="tablist" aria-label="Music categories"></div>
+
+      <div class="track-grid" id="libraryGrid"></div>
+    </section>
+
+    <!-- ===== Queue ===== -->
+    <section class="panel queue-panel" aria-labelledby="queueHeading">
+      <div class="panel-head">
+        <h2 id="queueHeading">Playlist queue <span class="count-badge" id="queueCount">0</span></h2>
+        <button class="btn btn-ghost btn-sm" id="clearQueueBtn" type="button">Clear queue</button>
+      </div>
+      <ul class="queue-list" id="queueList"></ul>
+      <p class="note">Queue and playback are kept in memory for this browser session. Server-side scheduling and 24/7 automation arrive with the backend phase.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>WAYLINE RADIO · Phase 1 frontend demonstration · Mock data, no backend connected.</p>
+    <p><a href="admin.html">Open administration dashboard</a> · <span id="footerYear">2026</span></p>
+  </footer>
+
+  <div id="toasts" class="toasts" aria-live="polite" aria-atomic="false"></div>
+
+  <script src="js/app.js"></script>
+  <script src="js/player.js"></script>
+</body>
+</html>
