@@ -12,7 +12,7 @@ export function canBroadcastTrack(track, now = new Date()) {
   if (track.license_expires_at) {
     const expiryDate = String(track.license_expires_at).slice(0, 10);
     const parsed = new Date(expiryDate + 'T00:00:00.000Z');
-    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(expiryDate) || !Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== expiryDate || expiryDate < now.toISOString().slice(0, 10)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(expiryDate) || !Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== expiryDate || expiryDate < now.toISOString().slice(0, 10)) {
       return { allowed: false, reason: 'License is expired or has an invalid date.' };
     }
   }
