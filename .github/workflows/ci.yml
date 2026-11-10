@@ -20,11 +20,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: \${{ matrix.node-version }}
       - name: Install dependencies
         run: npm install --ignore-scripts --no-audit --no-fund
       - name: Syntax checks
-        run: npm run check
+        run: npm run check && bash -n scripts/ci-smoke.sh
       - name: Unit and policy tests
         run: npm test
 
@@ -32,11 +32,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate Compose configuration
+      - name: Set up Docker Compose environment
         run: |
           cp .env.example .env
           docker compose config --quiet
-      - name: Build API and broadcaster image
-        run: docker build -t wayline-radio-ci .
-      - name: Build Icecast image
-        run: docker build -t wayline-icecast-ci ./docker/icecast
+      - name: Start stack and verify an actual broadcast
+        env:
+          POSTGRES_PASSWORD: wayline-ci-postgres-password
+          JWT_SECRET: wayline-ci-jwt-secret-0123456789abcdef0123456789abcdef0123456789abcdef
+          ICECAST_SOURCE_PASSWORD: wayline-ci-icecast-source-0123456789
+          ICECAST_ADMIN_PASSWORD: wayline-ci-icecast-admin-0123456789
+        run: bash scripts/ci-smoke.sh
