@@ -4,13 +4,17 @@
   "private": true,
   "type": "module",
   "description": "Multilingual multi-tenant internet radio for trucking and logistics companies",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node apps/api/src/server.js",
     "worker": "node apps/worker/src/collector.js",
     "create-admin": "node scripts/create-admin.mjs",
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check apps/api/src/server.js && node --check apps/api/src/policy.js && node --check apps/worker/src/collector.js && node --check apps/web/js/dashboard.js && node --check apps/web/js/player.js"
+    "check": "node --check apps/api/src/server.js && node --check apps/api/src/policy.js && node --check apps/worker/src/collector.js && node --check scripts/create-admin.mjs && node --check apps/web/js/dashboard.js && node --check apps/web/js/player.js"
   },
-  "dependencies": { "pg": "^8.16.3" }
+  "dependencies": {
+    "pg": "^8.16.3"
+  }
 }
