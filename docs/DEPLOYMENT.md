@@ -1,28 +1,52 @@
 # Deployment and radio-engine setup
 
-## App services
-Run the API, PostgreSQL and collector with Docker Compose. The API applies the SQL migration on startup. Create a platform admin with `node scripts/create-admin.mjs` inside the API container.
+## Included production stack
 
-## HTTPS
-Put the API behind a reverse proxy with a valid TLS certificate. Keep PostgreSQL private. Set `CORS_ORIGIN` to the exact public origin. Use unique secrets and regular database backups.
+The Docker Compose stack contains:
+- PostgreSQL 16 for persistent company, user, station, track and publishing data;
+- the WAYLINE API and mobile-first listener/admin web applications;
+- Icecast 2 as the streaming server;
+- an FFmpeg broadcaster that builds a continuous loop from each company's rights-cleared, uploaded MP3 library;
+- a collector for HTTPS RSS/Atom feeds and optional text-to-speech generation;
+- Caddy as the public HTTPS reverse proxy.
 
-## AzuraCast / AutoDJ
-WAYLINE does not bundle a third-party streaming server. AzuraCast provides an AutoDJ based on Liquidsoap and Icecast/Shoutcast-compatible public streams. Set each WAYLINE station's `stream_url` to that station's public listener URL. Store the AzuraCast API key only on the server if you build a management integration; never put it in browser JavaScript.
+The built-in broadcaster currently plays music tracks only. It does not yet insert generated information or announcement audio into the music playlist. Those generated files are stored separately for editorial/AutoDJ workflows. Do not describe TTS announcements as live until an actual playout integration has been configured and tested.
 
-To make the generated announcement audio available to an AzuraCast AutoDJ:
-1. Set `TTS_API_KEY`, `TTS_API_URL`, `TTS_MODEL` and the three voice variables in the server environment.
-2. Set `TTS_OUTPUT_HOST_DIR` to a durable host directory and mount that same directory into the corresponding AzuraCast station media directory. The worker writes company/language folders under `TTS_OUTPUT_DIR`.
-3. In AzuraCast Media Manager, assign each company/language folder to the appropriate playlist. AutoDJ only plays files that belong to a playlist.
-4. Confirm the stream is audible and verify playlist scheduling in AzuraCast before enabling the public station URL.
+## First deployment
 
-Approved information/announcements are converted into one MP3 per language. The spoken content begins with a disclosure that the narration is AI-generated. Newly generated files are written to per-company/per-language folders; an operator must add those folders to AutoDJ playlists. No audio is generated until a TTS provider is configured. Translations must be reviewed and completed first. OpenAI currently documents that `gpt-4o-mini-tts` will shut down on January 6, 2027; the Speech API example here is a temporary adapter and must be migrated before that date. The documented successor is a Realtime API model, not a drop-in `/v1/audio/speech` replacement.
+1. Use a Linux host with Docker Engine and the Docker Compose plugin. A stable public IP and a domain name are required for public HTTPS.
+2. Copy `.env.example` to `.env`. Set a real `PUBLIC_DOMAIN`, unique strong PostgreSQL and Icecast passwords, and a random `JWT_SECRET` of at least 32 characters. Use long random hexadecimal passwords for Icecast; the bundled entrypoint deliberately restricts password characters.
+3. Keep `.env` private and outside Git. Restrict SSH and firewall access; do not expose PostgreSQL or the Icecast source/admin interface directly to the public internet.
+4. Start the stack with `docker compose up -d --build`, then check `docker compose ps` and `docker compose logs --tail=100 api icecast broadcaster collector caddy`.
+5. Create the first platform administrator with `docker compose exec api npm run create-admin`. Use a unique email and a strong password. The password prompt is currently visible in the interactive terminal; run it in a trusted administrative session.
+6. Sign in at `https://YOUR_DOMAIN/admin`. Select a company, create a track record, upload an audio file, and complete the rights metadata. The broadcaster accepts only normalized managed MP3 uploads whose rights flags, proof URL and expiry pass the policy checks.
+7. Open the listener at `https://YOUR_DOMAIN/`. Confirm the station reports live, then play it from a separate device/network. Check the stream again after restarting the stack.
 
-AzuraCast docs: [API authentication](https://www.azuracast.com/docs/developers/apis/) · [Media management and AutoDJ playlists](https://www.azuracast.com/docs/user-guide/media-management/). OpenAI TTS docs: [Text to speech](https://developers.openai.com/api/docs/guides/text-to-speech).
+## Audio rights
 
-## Required production checks
-- Test each public stream URL from a mobile network.
-- Confirm each company has an isolated station, playlists and media path.
-- Confirm RSS sources are reliable and permitted for automated reuse.
-- Check voice pronunciation for Tajik, Russian and English before broadcast.
-- Monitor the collector and TTS worker logs.
-- Set data retention, backup and incident-response rules.
+A track is blocked unless the rights holder, license type, HTTPS proof URL, commercial permission, internet-streaming permission and verification flag are present. A valid upload is also required. The system checks recorded metadata; it cannot independently determine whether a license document is authentic, covers the relevant territory, or authorizes the intended use. Obtain and retain written permission where needed.
+
+## Optional external streaming / AutoDJ
+
+A station may instead point to an externally managed HTTP(S) stream such as an AzuraCast station. The external streaming service then owns its playlists and playout schedule. Never put provider API keys in browser JavaScript.
+
+## RSS and TTS
+
+The collector accepts credential-free HTTPS feed URLs, resolves and pins public DNS answers, rejects private/reserved addresses, blocks redirects and caps response size. Network-level outbound firewall/egress filtering is still recommended.
+
+TTS is optional. Configure `TTS_API_URL`, `TTS_API_KEY`, `TTS_MODEL` and the three voice variables. Generated files are written under `TTS_OUTPUT_DIR` in company/language folders. They are not automatically included in the bundled FFmpeg music stream. A production operator must review translations, pronunciation and the target playout workflow before using generated audio.
+
+## Operations
+
+- Back up PostgreSQL and the `wayline_media` and `wayline_tts` volumes. Test restore procedures, not only backup creation.
+- Monitor API, collector, broadcaster, Icecast and Caddy logs.
+- Check disk space, CPU, memory, TLS certificate renewal and stream availability.
+- Keep Node.js, PostgreSQL, Icecast, FFmpeg and Docker images patched.
+- Test public streams over mobile data and Wi-Fi after every deployment.
+- Review source-feed terms and music permissions before use.
+- Keep the API host and database private behind the reverse proxy. The Compose API port binds to loopback by default.
+- The Compose file's default `PUBLIC_DOMAIN=localhost` is for local testing only; configure a real domain before public launch.
+
+## Validation
+
+Run `npm run check` and `npm test` before deployment. The CI workflow also builds the Docker stack, creates a synthetic licensed test track, uploads it and verifies that the managed Icecast endpoint returns audio. A passing CI smoke test proves the synthetic test path, not legal clearance or production uptime for real music.
