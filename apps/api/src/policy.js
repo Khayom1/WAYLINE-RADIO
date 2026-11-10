@@ -1,14 +1,19 @@
 import net from 'node:net';
 
+function isSafeHttpsUrl(value) {
+  try { const url = new URL(value); return url.protocol === 'https:' && Boolean(url.hostname) && !url.username && !url.password; }
+  catch { return false; }
+}
+
 export function canBroadcastTrack(track, now = new Date()) {
   if (!track || track.is_active === false) return { allowed: false, reason: 'Track is inactive.' };
   if (track.license_verified !== true) return { allowed: false, reason: 'License has not been verified.' };
   if (track.commercial_allowed !== true) return { allowed: false, reason: 'Commercial broadcast rights are not confirmed.' };
   if (track.streaming_allowed !== true) return { allowed: false, reason: 'Internet streaming rights are not confirmed.' };
   if (!track.license_type || !String(track.license_type).trim()) return { allowed: false, reason: 'License type is missing.' };
-  if (!track.license_proof_url || !/^https?:\/\//i.test(track.license_proof_url)) return { allowed: false, reason: 'A license proof URL is missing.' };
+  if (!isSafeHttpsUrl(track.license_proof_url)) return { allowed: false, reason: 'A valid HTTPS license proof URL is required.' };
   if (!track.rights_holder || !String(track.rights_holder).trim()) return { allowed: false, reason: 'Rights holder is missing.' };
-  if (!track.audio_url || !/^https?:\/\//i.test(track.audio_url)) return { allowed: false, reason: 'A valid audio URL is required.' };
+  if (!isSafeHttpsUrl(track.audio_url)) return { allowed: false, reason: 'A valid HTTPS audio URL is required.' };
   if (track.license_expires_at) {
     const expiryDate = String(track.license_expires_at).slice(0, 10);
     const parsed = new Date(expiryDate + 'T00:00:00.000Z');
