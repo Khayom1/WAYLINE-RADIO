@@ -10,8 +10,11 @@ export function canBroadcastTrack(track, now = new Date()) {
   if (!track.rights_holder || !String(track.rights_holder).trim()) return { allowed: false, reason: 'Rights holder is missing.' };
   if (!track.audio_url || !/^https?:\/\//i.test(track.audio_url)) return { allowed: false, reason: 'A valid audio URL is required.' };
   if (track.license_expires_at) {
-    const expiry = new Date(track.license_expires_at);
-    if (!Number.isFinite(expiry.getTime()) || expiry < now) return { allowed: false, reason: 'License is expired or has an invalid date.' };
+    const expiryDate = String(track.license_expires_at).slice(0, 10);
+    const parsed = new Date(expiryDate + 'T00:00:00.000Z');
+    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(expiryDate) || !Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== expiryDate || expiryDate < now.toISOString().slice(0, 10)) {
+      return { allowed: false, reason: 'License is expired or has an invalid date.' };
+    }
   }
   return { allowed: true, reason: 'Rights metadata passed the configured checks. Human review of the proof is still required.' };
 }
