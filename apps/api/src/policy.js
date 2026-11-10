@@ -27,9 +27,9 @@ function isPrivateIPv4(ip) {
 }
 
 function isPrivateIPv6(host) {
-  const h = host.toLowerCase().replace(/^\\[|\\]$/g, '');
+  const h = host.toLowerCase();
   if (h === '::' || h === '::1' || h.startsWith('fc') || h.startsWith('fd') || h.startsWith('fe8') || h.startsWith('fe9') || h.startsWith('fea') || h.startsWith('feb') || h.startsWith('ff')) return true;
-  const mapped = h.match(/^::ffff:(\\d+\\.\\d+\\.\\d+\\.\\d+)$/);
+  const mapped = h.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
   if (mapped) return isPrivateIPv4(mapped[1]);
   return false;
 }
