@@ -1,9 +1,10 @@
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdir, rename, rm, stat, writeFile } from 'node:fs/promises';
-import { relative, resolve, sep } from 'node:path';
+import { resolve } from 'node:path';
 import { Pool } from 'pg';
 import { canBroadcastTrack } from '../../api/src/policy.js';
+import { ffconcatFile, managedAudioPath, safeMount } from './broadcast-policy.js';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: process.env.PGSSLMODE === 'require' ? { rejectUnauthorized: true } : undefined, max: 4 });
 const MEDIA_DIR = resolve(process.env.MEDIA_DIR || '/var/wayline-media');
@@ -18,22 +19,6 @@ const jobs = new Map();
 let busy = false;
 let stopping = false;
 let timer;
-
-export function managedAudioPath(value, root = MEDIA_DIR) {
-  if (typeof value !== 'string' || !/^uploads\/[a-f0-9-]{36}\.(mp3|m4a|mp4|aac|wav|flac|ogg|opus|webm)$/i.test(value)) return null;
-  const base = resolve(root);
-  const target = resolve(base, value);
-  if (!target.startsWith(base + sep) || !relative(base, target).startsWith('uploads' + sep)) return null;
-  return target;
-}
-
-export function ffconcatFile(paths) {
-  return paths.map(path => "file '" + path.replace(/\\/g, '\\\\').replace(/'/g, "'\\''") + "'").join('\n') + '\n';
-}
-
-function safeMount(value) {
-  return typeof value === 'string' && /^[a-z0-9][a-z0-9-]{0,79}$/i.test(value);
-}
 
 async function stopJob(slug) {
   const job = jobs.get(slug);
