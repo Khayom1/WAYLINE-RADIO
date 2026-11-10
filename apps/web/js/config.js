@@ -1,0 +1,1 @@
+window.WAYLINE_CONFIG = Object.freeze({ apiBase: '' });

@@ -1,29 +1,26 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0b1015">
-<title>WAYLINE RADIO — Listen</title>
-<link rel="stylesheet" href="css/style.css">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0a1418"><meta name="description" content="WAYLINE RADIO — company radio for the road">
+  <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="css/style.css">
+  <title>WAYLINE RADIO · Listen</title>
 </head>
 <body>
-<header class="listen-header"><a class="brand" href="index.html"><span class="brand-mark">W</span><span>WAYLINE<small>RADIO NETWORK</small></span></a><a class="admin-link" href="admin.html">Control center ↗</a></header>
+<header class="listen-header"><a class="brand" href="index.html"><span class="brand-mark">W</span><span>WAYLINE<small>RADIO NETWORK</small></span></a><div class="header-actions"><select id="languageSelect" aria-label="Language"><option value="en">EN</option><option value="ru">RU</option><option value="tg">TJ</option></select><a class="admin-link" href="admin.html" data-i18n="control">Control center ↗</a></div></header>
 <main class="listen-main">
-<section class="hero"><div class="eyebrow">YOUR ROAD. YOUR RADIO.</div><h1>Stay connected<br>wherever you go.</h1><p>Choose your company station and explore the WAYLINE radio experience.</p><span class="demo-chip">● INTERACTIVE DEMO</span></section>
-<section class="station-section"><div class="section-title"><div><div class="eyebrow">SELECT YOUR STATION</div><h2>Company radio</h2></div><span class="muted">2 demo stations</span></div>
-<div class="station-cards">
-<button class="station-card selected" data-station="CNU"><span class="station-symbol">C</span><span><strong>CNU Radio</strong><small>Company station</small></span><span class="station-arrow">↗</span></button>
-<button class="station-card" data-station="ETL"><span class="station-symbol etl">E</span><span><strong>ETL Radio</strong><small>Company station</small></span><span class="station-arrow">↗</span></button>
-</div></section>
-<section class="player-card">
-<div class="player-top"><span class="live-label"><i></i> DEMO PLAYER</span><span class="muted" id="stationName">CNU RADIO</span></div>
-<div class="album-art"><div class="sound-rings">♫</div><span>WAYLINE<br>RADIO</span></div>
-<div class="track-info"><div class="eyebrow">SAMPLE PLAYBACK</div><h2 id="trackName">Radio experience preview</h2><p id="trackArtist">No live stream connected</p></div>
-<div class="player-controls"><button id="playButton" class="play-button" aria-label="Play demo">▶</button><div class="player-message" id="playerMessage">Demo mode — live audio unavailable</div></div>
-<div class="progress-track"><span></span></div>
-</section>
-<section class="categories"><div class="eyebrow">EXPLORE MUSIC</div><h2>Music categories</h2><div class="category-grid"><div>♫ <span>Rock</span></div><div>◖ <span>Pop</span></div><div>♬ <span>Country</span></div><div>◉ <span>Jazz</span></div><div>⌁ <span>Electronic</span></div><div>♩ <span>Classical</span></div></div></section>
-<div class="footer-note">WAYLINE RADIO · Customer prototype · Sample content only</div>
+  <section class="hero"><div class="eyebrow" data-i18n="tagline">YOUR ROAD. YOUR RADIO.</div><h1 data-i18n="headline">Stay connected<br>wherever you go.</h1><p data-i18n="intro">Choose your company station and listen on the road.</p><span class="live-chip" id="liveChip"><i></i><span data-i18n="streamNotConfigured">STREAM NOT CONFIGURED</span></span></section>
+  <section class="station-section"><div class="section-title"><div><div class="eyebrow" data-i18n="selectStation">SELECT YOUR STATION</div><h2 data-i18n="companyRadio">Company radio</h2></div><span class="muted" id="stationCount">2 stations</span></div><div class="station-cards" id="stationCards"></div></section>
+  <section class="player-card">
+    <div class="player-top"><span class="live-label"><i></i><span data-i18n="radioPlayer">RADIO PLAYER</span></span><span class="muted" id="stationName">CNU RADIO</span></div>
+    <div class="album-art"><div class="sound-rings">♫</div><span>WAYLINE<br>RADIO</span></div>
+    <div class="track-info"><div class="eyebrow" data-i18n="nowPlaying">NOW PLAYING</div><h2 id="trackName" data-i18n="chooseStation">Choose a station</h2><p id="trackArtist" data-i18n="streamStatus">A real stream URL is required for audio playback.</p></div>
+    <div class="player-controls"><button id="playButton" class="play-button" aria-label="Play or pause" disabled>▶</button><div class="player-message" id="playerMessage" data-i18n="noStream">No stream URL configured</div></div>
+    <audio id="radioAudio" preload="none" playsinline></audio>
+  </section>
+  <section class="categories"><div class="eyebrow" data-i18n="explore">EXPLORE MUSIC</div><h2 data-i18n="categories">Music categories</h2><div class="category-grid"><div>↗ <span>Road & Travel</span></div><div>◖ <span>Country</span></div><div>♫ <span>Pop</span></div><div>◉ <span>Rock</span></div><div>⌁ <span>Jazz</span></div><div>♩ <span>Classical</span></div></div></section>
+  <section class="announcements hidden" id="publicAnnouncements"><div class="eyebrow" data-i18n="companyUpdates">COMPANY UPDATES</div><h2 data-i18n="latestMessages">Latest messages</h2><div id="messageList"></div></section>
+  <footer class="footer-note">WAYLINE RADIO · <span data-i18n="footerNote">Company radio network</span> · <a href="admin.html" data-i18n="adminLink">Administration</a></footer>
 </main>
 <script src="js/player.js"></script>
 </body></html>

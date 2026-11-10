@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: wayline
+      POSTGRES_USER: wayline
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - wayline_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wayline -d wayline"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://wayline:${POSTGRES_PASSWORD}@db:5432/wayline
+      AUTO_MIGRATE: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+  collector:
+    build: .
+    restart: unless-stopped
+    command: ["npm","run","worker"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://wayline:${POSTGRES_PASSWORD}@db:5432/wayline
+      TTS_OUTPUT_DIR: /var/wayline-tts
+    volumes:
+      - ${TTS_OUTPUT_HOST_DIR:-./storage/wayline-tts}:/var/wayline-tts
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  wayline_pg:

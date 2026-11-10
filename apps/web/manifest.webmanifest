@@ -1,0 +1,10 @@
+{
+  "name": "WAYLINE RADIO",
+  "short_name": "WAYLINE",
+  "description": "Company radio for trucking and logistics teams",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#091216",
+  "theme_color": "#0a1418",
+  "icons": [{"src":"/assets/favicon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]
+}

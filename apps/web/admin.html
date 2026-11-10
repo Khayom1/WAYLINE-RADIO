@@ -1,90 +1,91 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0b1015">
-<title>WAYLINE RADIO — Control Center</title>
-<link rel="stylesheet" href="css/admin.css">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b1418"><meta name="description" content="WAYLINE RADIO network control center">
+  <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/admin.css"><title>WAYLINE RADIO · Control Center</title>
 </head>
 <body>
-<div class="app-shell">
-<aside class="sidebar" id="sidebar">
-  <a class="brand" href="admin.html"><span class="brand-mark">W</span><span>WAYLINE<small>RADIO NETWORK</small></span></a>
-  <div class="workspace-label">WORKSPACE</div>
-  <nav class="nav">
-    <button class="nav-item active" data-page="overview"><span>▦</span> Overview</button>
-    <button class="nav-item" data-page="companies"><span>▣</span> Companies</button>
-    <button class="nav-item" data-page="stations"><span>◉</span> Radio stations</button>
-    <button class="nav-item" data-page="library"><span>♫</span> Music library</button>
-    <button class="nav-item" data-page="information"><span>⌁</span> Information center</button>
-    <button class="nav-item" data-page="broadcast"><span>◷</span> Broadcasting</button>
-  </nav>
-  <div class="sidebar-bottom">
-    <div class="demo-note"><span class="pulse"></span> DEMO ENVIRONMENT<small>Sample data · No live broadcast</small></div>
-    <a href="index.html" class="listener-link">↗ Listener experience</a>
-  </div>
-</aside>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="admin.html"><span class="brand-icon">W</span><span>WAYLINE<small>RADIO NETWORK</small></span></a>
+    <div class="side-caption" data-i18n="workspace">WORKSPACE</div>
+    <nav class="nav" aria-label="Main navigation">
+      <button class="nav-item active" data-page="overview"><span>▦</span><span data-i18n="overview">Overview</span></button>
+      <button class="nav-item" data-page="companies"><span>▣</span><span data-i18n="companies">Companies</span></button>
+      <button class="nav-item" data-page="stations"><span>◉</span><span data-i18n="stations">Stations</span></button>
+      <button class="nav-item" data-page="library"><span>♫</span><span data-i18n="library">Music library</span></button>
+      <button class="nav-item" data-page="information"><span>⌁</span><span data-i18n="information">Information intake</span></button>
+      <button class="nav-item" data-page="announcements"><span>◷</span><span data-i18n="announcements">Announcements</span></button>
+      <button class="nav-item" data-page="rights"><span>©</span><span data-i18n="rights">Rights & licensing</span></button>
+    </nav>
+    <div class="sidebar-bottom"><div class="demo-status"><i></i><span data-i18n="localMode">LOCAL DEMO MODE</span><small data-i18n="localDesc">Changes stay in this browser</small></div><a class="listener-link" href="index.html">↗ <span data-i18n="listener">Listener app</span></a></div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <button class="mobile-menu" id="menuBtn" aria-label="Open menu">☰</button>
+      <div><div class="eyebrow">WAYLINE NETWORK / CONTROL</div><div class="top-title" id="pageTitle">Overview</div></div>
+      <div class="top-actions"><span id="modeLabel" class="mode-label">LOCAL DEMO MODE</span><button class="secondary connect-btn" id="apiConnect">Connect API</button><select id="companySelect" aria-label="Selected company"></select><select id="languageSelect" aria-label="Language"><option value="en">EN</option><option value="ru">RU</option><option value="tg">TJ</option></select></div>
+    </header>
+    <div class="content">
+      <section class="page" id="overview">
+        <div class="welcome"><div><div class="eyebrow" data-i18n="networkOverview">NETWORK OVERVIEW</div><h1 data-i18n="radioOperations">Radio operations</h1><p class="muted" data-i18n="overviewDesc">A clear view of your company radio network.</p></div><button class="primary" data-action="add-company">＋ <span data-i18n="addCompany">Add company</span></button></div>
+        <div class="stats">
+          <article class="stat"><span data-i18n="companies">COMPANIES</span><strong id="statCompanies">02</strong><small data-i18n="registeredCompanies">Registered companies</small></article>
+          <article class="stat"><span data-i18n="stations">STATIONS</span><strong id="statStations">02</strong><small data-i18n="configuredStations">Configured stations</small></article>
+          <article class="stat"><span data-i18n="musicTracks">MUSIC TRACKS</span><strong id="statTracks">00</strong><small data-i18n="rightsChecked">Rights-controlled library</small></article>
+          <article class="stat"><span data-i18n="pendingItems">PENDING ITEMS</span><strong id="statPending">00</strong><small data-i18n="reviewBeforeAir">Review before broadcast</small></article>
+        </div>
+        <div class="section-head"><div><h2 data-i18n="companyStations">Company stations</h2><p class="muted" data-i18n="separateStations">Separate radio environments</p></div><button class="text-btn" data-go="companies" data-i18n="viewAll">View all →</button></div>
+        <div class="company-grid" id="overviewCompanies"></div>
+        <div class="two-col">
+          <article class="panel"><div class="panel-head"><div><h3 data-i18n="broadcastReadiness">Broadcast readiness</h3><p class="muted" data-i18n="basedOnConfig">Based on this browser's configuration</p></div></div><div id="readinessList"></div></article>
+          <article class="panel"><div class="panel-head"><h3 data-i18n="safetyFirst">Rights first</h3></div><div class="notice"><strong data-i18n="musicBlocked">Unverified music is blocked</strong><p data-i18n="rightsNote">A track needs valid proof plus commercial and internet-streaming permission before it can be marked broadcast-eligible.</p></div><div class="notice subdued"><strong data-i18n="honestDemo">Honest demo</strong><p data-i18n="demoNote">This control center stores demo data in this browser. Live broadcasting requires a configured media server and stream URL.</p></div></article>
+        </div>
+      </section>
 
-<main class="main">
-<header class="topbar">
-  <button class="mobile-menu" id="menuBtn">☰</button>
-  <div><div class="eyebrow">WAYLINE NETWORK / CONTROL</div><div class="top-title" id="pageTitle">Overview</div></div>
-  <div class="top-actions"><span class="demo-chip">● DEMO MODE</span><div class="avatar">A</div></div>
-</header>
+      <section class="page hidden" id="companies">
+        <div class="welcome"><div><div class="eyebrow">NETWORK MANAGEMENT</div><h1 data-i18n="companies">Companies</h1><p class="muted" data-i18n="companiesDesc">Create and manage separate company environments.</p></div><button class="primary" data-action="add-company">＋ <span data-i18n="addCompany">Add company</span></button></div>
+        <div class="company-grid" id="companyList"></div>
+      </section>
 
-<section class="content">
-<div class="page" id="overview">
-  <div class="welcome-row"><div><div class="eyebrow">NETWORK OVERVIEW</div><h1>Radio operations</h1><p class="muted">A unified view of your company radio network.</p></div><button class="primary" data-go="companies">＋ Add company</button></div>
-  <div class="stats">
-    <article class="stat-card"><div class="stat-label">COMPANIES</div><div class="stat-value" id="statCompanies">02</div><div class="stat-foot">Registered demo companies</div></article>
-    <article class="stat-card"><div class="stat-label">RADIO STATIONS</div><div class="stat-value">02</div><div class="stat-foot">Configured examples</div></article>
-    <article class="stat-card"><div class="stat-label">MUSIC TRACKS</div><div class="stat-value" id="statTracks">08</div><div class="stat-foot">Sample library entries</div></article>
-    <article class="stat-card"><div class="stat-label">INFORMATION SOURCES</div><div class="stat-value">03</div><div class="stat-foot">Illustrative source records</div></article>
-  </div>
-  <div class="section-heading"><div><h2>Company stations</h2><p class="muted">Separate radio environments</p></div><button class="text-btn" data-go="companies">View all →</button></div>
-  <div class="company-grid" id="overviewCompanies"></div>
-  <div class="two-col">
-    <article class="panel"><div class="panel-head"><div><h3>Broadcast activity</h3><p class="muted">Illustrative operational status</p></div><span class="soft-tag">DEMO</span></div><div class="activity"><div class="activity-icon">♫</div><div><strong>Music library</strong><small>Sample tracks available for preview</small></div><span class="status neutral">Configured</span></div><div class="activity"><div class="activity-icon">⌁</div><div><strong>Information collection</strong><small>No external sources connected</small></div><span class="status warning">Not connected</span></div><div class="activity"><div class="activity-icon">◉</div><div><strong>Live broadcasting</strong><small>Streaming engine not connected</small></div><span class="status warning">Offline</span></div></article>
-    <article class="panel"><div class="panel-head"><div><h3>System notes</h3><span class="soft-tag">PROTOTYPE</span></div></div><div class="notice"><strong>Demo data only</strong><p>This interface demonstrates the planned workflows. It does not connect to a live radio server or collect real information.</p></div><div class="notice subtle"><strong>Next engineering milestone</strong><p>Connect the backend, company permissions, approved information sources and broadcasting infrastructure.</p></div></article>
-  </div>
-</div>
+      <section class="page hidden" id="stations">
+        <div class="welcome"><div><div class="eyebrow">RADIO MANAGEMENT</div><h1 data-i18n="stations">Stations</h1><p class="muted" data-i18n="stationsDesc">Configure each company's public audio stream.</p></div></div>
+        <div class="panel table-panel"><table><thead><tr><th data-i18n="station">STATION</th><th data-i18n="company">COMPANY</th><th>STREAM URL</th><th data-i18n="status">STATUS</th><th></th></tr></thead><tbody id="stationRows"></tbody></table></div>
+      </section>
 
-<div class="page hidden" id="companies">
-  <div class="welcome-row"><div><div class="eyebrow">NETWORK MANAGEMENT</div><h1>Companies</h1><p class="muted">Manage company radio environments.</p></div><button class="primary" id="addCompany">＋ Add company</button></div>
-  <div class="company-grid" id="companyList"></div>
-</div>
+      <section class="page hidden" id="library">
+        <div class="welcome"><div><div class="eyebrow">AUDIO MANAGEMENT</div><h1 data-i18n="library">Music library</h1><p class="muted" data-i18n="libraryDesc">Every track must carry rights metadata before broadcast.</p></div><button class="primary" data-action="add-track">＋ <span data-i18n="addTrack">Add track</span></button></div>
+        <div class="toolbar"><input id="trackSearch" type="search" placeholder="Search title, artist or composer"><select id="categoryFilter"><option value="all">All categories</option><option>Road & Travel</option><option>Country</option><option>Pop</option><option>Rock</option><option>Jazz</option><option>Classical</option><option>Electronic</option><option>Relax</option></select></div>
+        <div class="panel table-panel"><table><thead><tr><th data-i18n="track">TRACK</th><th data-i18n="artist">ARTIST</th><th data-i18n="category">CATEGORY</th><th data-i18n="license">LICENSE</th><th data-i18n="broadcast">BROADCAST</th><th></th></tr></thead><tbody id="trackRows"></tbody></table></div>
+        <p class="footnote" data-i18n="rightsDisclaimer">Rights status is an administrative record, not legal certification. Verify original documents and territory before broadcast.</p>
+      </section>
 
-<div class="page hidden" id="stations">
-  <div class="eyebrow">RADIO MANAGEMENT</div><h1>Radio stations</h1><p class="muted">Company-specific station overview.</p>
-  <div class="panel table-panel"><table><thead><tr><th>STATION</th><th>COMPANY</th><th>STREAM</th><th>STATUS</th></tr></thead><tbody id="stationRows"></tbody></table></div>
-</div>
+      <section class="page hidden" id="information">
+        <div class="welcome"><div><div class="eyebrow">INFORMATION PIPELINE</div><h1 data-i18n="information">Information intake</h1><p class="muted" data-i18n="informationDesc">RSS/Atom collection feeds a review queue; nothing goes on air automatically.</p></div><button class="primary" data-action="add-source">＋ <span data-i18n="addSource">Add source</span></button></div>
+        <div class="panel"><div class="panel-head"><h3 data-i18n="sources">Configured sources</h3><span class="tag">HTTPS RSS / ATOM</span></div><div id="sourceList" class="stack-list"></div></div>
+        <div class="section-head"><div><h2 data-i18n="reviewQueue">Review queue</h2><p class="muted" data-i18n="reviewDesc">Approve or reject collected information.</p></div></div>
+        <div class="panel" id="informationList"></div>
+      </section>
 
-<div class="page hidden" id="library">
-  <div class="welcome-row"><div><div class="eyebrow">AUDIO MANAGEMENT</div><h1>Music library</h1><p class="muted">Organize music into categories.</p></div><button class="primary" id="addTrack">＋ Add track</button></div>
-  <div class="toolbar"><input id="trackSearch" placeholder="Search tracks or artists..."><select id="categoryFilter"><option value="All">All categories</option><option>Rock</option><option>Pop</option><option>Country</option><option>Jazz</option><option>Electronic</option><option>Classical</option></select></div>
-  <div class="panel table-panel"><table><thead><tr><th>TRACK</th><th>ARTIST</th><th>CATEGORY</th><th>COMPANY</th></tr></thead><tbody id="trackRows"></tbody></table></div>
-</div>
+      <section class="page hidden" id="announcements">
+        <div class="welcome"><div><div class="eyebrow">COMPANY MESSAGES</div><h1 data-i18n="announcements">Announcements</h1><p class="muted" data-i18n="announcementsDesc">Prepare company messages in all three languages.</p></div><button class="primary" data-action="add-announcement">＋ <span data-i18n="createAnnouncement">Create announcement</span></button></div>
+        <div class="notice"><strong data-i18n="threeLanguagesRequired">Three language versions required</strong><p data-i18n="announcementRule">An announcement cannot be approved until Tajik, Russian and English text are all present.</p></div>
+        <div class="stack-list" id="announcementList"></div>
+      </section>
 
-<div class="page hidden" id="information">
-  <div class="eyebrow">INFORMATION PIPELINE</div><h1>Information center</h1><p class="muted">A planned workspace for collecting and preparing information for broadcast.</p>
-  <div class="notice large"><span class="notice-icon">⌁</span><div><strong>Collection engine is not connected</strong><p>No external information is being collected in this prototype. Source integration will be implemented after the source types and approval rules are confirmed.</p></div></div>
-  <div class="section-heading"><h2>Example source records</h2><span class="soft-tag">SAMPLE DATA</span></div>
-  <div class="panel table-panel"><table><thead><tr><th>SOURCE</th><th>TYPE</th><th>CONNECTION</th></tr></thead><tbody><tr><td>Company announcements</td><td>Internal</td><td><span class="status neutral">Example only</span></td></tr><tr><td>Approved news feed</td><td>External feed</td><td><span class="status warning">Not connected</span></td></tr><tr><td>Road information</td><td>External source</td><td><span class="status warning">Not connected</span></td></tr></tbody></table></div>
+      <section class="page hidden" id="rights">
+        <div class="eyebrow">COMPLIANCE & METADATA</div><h1 data-i18n="rights">Rights & licensing</h1><p class="muted" data-i18n="rightsPageDesc">Review how WAYLINE records ownership and permitted use.</p>
+        <div class="two-col">
+          <article class="panel"><h3 data-i18n="requiredMetadata">Required track metadata</h3><ul class="plain-list"><li data-i18n="meta1">Artist, composer and rights holder</li><li data-i18n="meta2">License type and original source</li><li data-i18n="meta3">Evidence or written permission</li><li data-i18n="meta4">Commercial broadcast permission</li><li data-i18n="meta5">Internet streaming permission</li><li data-i18n="meta6">Territory and expiry date</li></ul></article>
+          <article class="panel"><h3 data-i18n="eligibilityRule">Broadcast eligibility rule</h3><p class="muted" data-i18n="eligibilityDesc">A track is eligible only when every required rights flag is explicitly confirmed and the license is still valid.</p><div class="rule-chip">VERIFIED + COMMERCIAL + STREAMING + IN DATE</div><p class="footnote" data-i18n="noLegalGuarantee">The platform cannot independently confirm whether a license document is genuine or covers every territory.</p></article>
+        </div>
+        <div class="section-head"><h2 data-i18n="blockedTracks">Tracks not cleared for broadcast</h2></div><div class="panel table-panel"><table><thead><tr><th data-i18n="track">TRACK</th><th data-i18n="artist">ARTIST</th><th data-i18n="reason">REASON</th></tr></thead><tbody id="blockedRows"></tbody></table></div>
+      </section>
+    </div>
+  </main>
 </div>
-
-<div class="page hidden" id="broadcast">
-  <div class="eyebrow">TRANSMISSION CONTROL</div><h1>Broadcasting</h1><p class="muted">Broadcast configuration preview.</p>
-  <div class="broadcast-card"><div class="broadcast-orb">◉</div><div><span class="soft-tag">STREAM ENGINE</span><h2>Broadcasting engine unavailable</h2><p>The prototype has no connection to Icecast, AzuraCast or another streaming server.</p><span class="status warning">Not connected</span></div></div>
-  <div class="two-col"><article class="panel"><h3>Planned broadcast inputs</h3><div class="activity"><span class="activity-icon">♫</span><div><strong>Music library</strong><small>Category-based audio content</small></div></div><div class="activity"><span class="activity-icon">⌁</span><div><strong>Prepared information</strong><small>Collected and approved content</small></div></div></article><article class="panel"><h3>Production requirements</h3><p class="muted">A streaming server, station configuration, audio pipeline and monitoring must be implemented before live broadcasting.</p></article></div>
-</div>
-</section>
-</main>
-</div>
-
-<div class="modal-backdrop hidden" id="modal">
-<div class="modal"><div class="modal-head"><h2 id="modalTitle">Add company</h2><button class="icon-btn" id="closeModal">✕</button></div><form id="modalForm"><label id="fieldLabel">Company name</label><input id="fieldValue" required maxlength="50" placeholder="Enter name"><div class="modal-actions"><button type="button" class="secondary" id="cancelModal">Cancel</button><button class="primary" type="submit">Save</button></div></form></div>
-</div>
-<script src="js/dashboard.js"></script>
-</body>
-</html>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="js/config.js"></script><script src="js/dashboard.js"></script>
+</body></html>

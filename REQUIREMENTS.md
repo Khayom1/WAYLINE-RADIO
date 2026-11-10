@@ -1,111 +1,40 @@
-# WAYLINE RADIO
-## Customer Requirements Specification
+# WAYLINE RADIO — product requirements
 
-Version: 1.1
-Status: Based on original customer messages
+## Product definition
+A multilingual multi-company radio platform for trucking and logistics businesses, starting with CNU Radio and ETL Radio.
 
-## 1. Project Purpose
+## Confirmed product rules
+- Tajik (`tg`), Russian (`ru`) and English (`en`) for listener and administration interfaces.
+- Each company owns a separate station, catalogue, information sources and announcements.
+- Mobile-first listener experience with PWA installation support.
+- Music is organized by category and records artist, composer, rights holder, license, proof reference, commercial permission, streaming permission and expiry.
+- A track is not broadcast-eligible until the rights fields are explicitly confirmed.
+- RSS/Atom feeds can be collected automatically; items enter a human review queue.
+- Company announcements and information require all three language versions before approval.
+- Optional TTS can generate one audio file per language once configured.
+- Real audio playback requires a live public stream URL from a media server such as AzuraCast.
 
-Build an internet radio platform for trucking companies.
+## Implemented in this repository
+- Responsive listener PWA shell and admin control center.
+- Local demo data mode and API connection/login from the dashboard.
+- Node.js API, PostgreSQL schema, company-membership checks, scrypt passwords and time-limited signed sessions.
+- Company, station, track, feed, information and announcement endpoints.
+- RSS/Atom collector with HTTPS-only input checks, response limits and review queue.
+- Optional server-side TTS worker which creates language-specific MP3 files for a mounted AutoDJ media folder.
+- Three-language UI strings and translation fields.
+- Tests for broadcast-rights gating and feed URL validation.
 
-The platform must automatically collect information, organize music by categories, broadcast content, and provide an administration panel for multiple companies.
+## Requires environment / operator configuration
+- PostgreSQL and a deployed API.
+- TLS, domain, secrets and backups.
+- TTS credentials and tested voices for the three languages.
+- AzuraCast/Icecast deployment, station setup, media folders/playlists and public stream URLs.
+- Actual license documents and permission from every rights holder.
+- Verified RSS sources and a human editorial policy.
 
-The customer specifically mentioned CNU Radio and ETL Radio.
-
-## 2. Confirmed Requirements
-
-### CR-001 — Internet Radio
-The system must provide internet radio for trucking companies.
-
-### CR-002 — Automatic Information Collection
-The system must automatically collect information.
-Exact sources and collection rules are not yet specified.
-
-### CR-003 — Broadcasting
-The system must broadcast collected information.
-The exact broadcasting workflow requires confirmation.
-
-### CR-004 — Music Organization
-The system must collect and organize music by categories.
-The complete category list requires confirmation.
-
-### CR-005 — Application
-The customer expects an application for listening to the radio.
-The exact platform and functions require confirmation.
-
-### CR-006 — Multi-Company Administration
-The system must provide an administration panel for multiple companies.
-
-### CR-007 — Separate Company Radio Stations
-The platform must support separate stations, including:
-- CNU Radio
-- ETL Radio
-- Additional companies in the future.
-
-### CR-008 — Interactive Frontend
-An interactive frontend must be developed and presented to the customer for evaluation.
-
-The customer intends to compare it with an existing implementation.
-
-## 3. Main Product Components
-
-### A. Listener Application
-An application for listening to company radio stations.
-
-### B. Administration Panel
-A central interface for managing multiple companies and their radio stations.
-
-### C. Information Collection and Broadcasting
-A system that automatically collects information and broadcasts it.
-
-### D. Music Library
-A system for collecting and organizing music by categories.
-
-## 4. Initial Frontend Deliverable
-
-The first deliverable is an interactive frontend prototype demonstrating:
-- Central administration interface.
-- Multiple company radio stations.
-- CNU Radio and ETL Radio examples.
-- Music library and categories.
-- Radio listening interface.
-- Information collection and broadcasting workflows.
-
-Mock data may be used. Simulated functions must be clearly distinguished from real production capabilities.
-
-## 5. Unconfirmed Requirements
-
-The following must not be assumed without customer confirmation:
-1. Exact information sources.
-2. Types of information to collect.
-3. Information filtering and approval rules.
-4. Music category list.
-5. Music licensing and content rights.
-6. Whether broadcasting includes a live presenter.
-7. Exact mobile application platform.
-8. User registration and authentication.
-9. Company administrator roles.
-10. Expected number of companies and simultaneous listeners.
-11. Hosting and deployment requirements.
-12. Analytics requirements.
-
-## 6. Implementation Principles
-
-- Preserve the customer's original requirements.
-- Do not introduce unrequested features as mandatory.
-- Support additional companies in the future.
-- Keep company radio configurations separate.
-- Distinguish prototype behavior from production functionality.
-- Verify each feature before marking it complete.
-
-## 7. Current Status
-
-The initial repository structure exists.
-The initial requirements have been documented.
-The interactive frontend is the next development target.
-
-Backend, automatic information collection, and real broadcasting have not yet been implemented.
-
----
-
-WAYLINE RADIO — Customer Requirements Specification v1.1
+## Explicitly not claimed
+- This source repository is not a hosted 24/7 radio service.
+- No music catalogue or third-party rights have been supplied.
+- The platform does not verify legal documents automatically.
+- AI translation is not bundled. Operators provide/review the three language versions.
+- TTS files are generated only when the optional provider is configured.

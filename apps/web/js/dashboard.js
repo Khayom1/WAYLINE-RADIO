@@ -1,231 +1,50 @@
-/* WAYLINE RADIO — demo dashboard state
- * Demo-only persistence. This is not authentication or server-side tenant isolation.
- */
-const STORAGE_KEY = "wayline-radio:dashboard:v1";
-
-const DEFAULT_COMPANIES = [
-  { name: "CNU", station: "CNU Radio", code: "C", type: "Company radio" },
-  { name: "ETL", station: "ETL Radio", code: "E", type: "Company radio" }
-];
-
-const DEFAULT_TRACKS = [
-  ["Midnight Drive", "Sample Artist", "Electronic", "CNU"],
-  ["Open Highway", "Sample Artist", "Country", "ETL"],
-  ["Northern Lights", "Sample Artist", "Rock", "CNU"],
-  ["Blue Horizon", "Sample Artist", "Jazz", "ETL"],
-  ["City Motion", "Sample Artist", "Pop", "CNU"],
-  ["Quiet Roads", "Sample Artist", "Classical", "ETL"],
-  ["Long Distance", "Sample Artist", "Country", "CNU"],
-  ["After Sunset", "Sample Artist", "Electronic", "ETL"]
-];
-
-const $ = id => document.getElementById(id);
-
-function cloneDefaults() {
-  return {
-    companies: DEFAULT_COMPANIES.map(item => ({ ...item })),
-    tracks: DEFAULT_TRACKS.map(item => [...item])
-  };
-}
-
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return cloneDefaults();
-
-    const saved = JSON.parse(raw);
-    if (!saved || !Array.isArray(saved.companies) || !Array.isArray(saved.tracks)) {
-      return cloneDefaults();
-    }
-
-    const companies = saved.companies
-      .filter(c => c && typeof c.name === "string" && c.name.trim())
-      .map(c => {
-        const name = c.name.trim().slice(0, 50);
-        return {
-          name,
-          station: name + " Radio",
-          code: Array.from(name)[0].toUpperCase(),
-          type: "Company radio"
-        };
-      });
-
-    const tracks = saved.tracks
-      .filter(t => Array.isArray(t) && t.length >= 4)
-      .map(t => t.slice(0, 4).map(value => String(value).slice(0, 100)));
-
-    return {
-      companies: companies.length ? companies : cloneDefaults().companies,
-      tracks
-    };
-  } catch (error) {
-    console.warn("WAYLINE demo data could not be loaded; defaults were restored.", error);
-    return cloneDefaults();
-  }
-}
-
-let state = loadState();
-let companies = state.companies;
-let tracks = state.tracks;
-
-function saveState() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ companies, tracks }));
-  } catch (error) {
-    console.warn("WAYLINE demo data could not be saved in this browser.", error);
-  }
-}
-
-function escapeHTML(value) {
-  return String(value).replace(/[&<>"']/g, char => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  })[char]);
-}
-
-function companyCard(company) {
-  const isEtl = company.name === "ETL";
-  const initial = escapeHTML(Array.from(company.name)[0] || "?");
-  const name = escapeHTML(company.name);
-  return `<article class="company-card">
-    <div class="company-logo ${isEtl ? "etl" : ""}">${initial}</div>
-    <div class="company-meta">
-      <strong>${name} Radio</strong>
-      <small>${escapeHTML(company.type)} · Demo configuration</small>
-    </div>
-    <button class="company-open" data-company="${name}" type="button">View →</button>
-  </article>`;
-}
-
-function renderCompanies() {
-  const markup = companies.map(companyCard).join("");
-  $("companyList").innerHTML = markup;
-  $("overviewCompanies").innerHTML = markup;
-  $("statCompanies").textContent = String(companies.length).padStart(2, "0");
-}
-
-function renderStations() {
-  $("stationRows").innerHTML = companies.map(company => `<tr>
-    <td><strong>${escapeHTML(company.station)}</strong></td>
-    <td>${escapeHTML(company.name)}</td>
-    <td>Not connected</td>
-    <td><span class="status warning">Offline</span></td>
-  </tr>`).join("");
-}
-
-function renderTracks() {
-  const query = $("trackSearch").value.trim().toLowerCase();
-  const category = $("categoryFilter").value;
-  const filtered = tracks.filter(track =>
-    track.join(" ").toLowerCase().includes(query) &&
-    (category === "All" || track[2] === category)
-  );
-
-  $("trackRows").innerHTML = filtered.map(track => `<tr>
-    <td><strong>${escapeHTML(track[0])}</strong></td>
-    <td>${escapeHTML(track[1])}</td>
-    <td>${escapeHTML(track[2])}</td>
-    <td>${escapeHTML(track[3])}</td>
-  </tr>`).join("") || '<tr><td colspan="4">No matching tracks.</td></tr>';
-
-  $("statTracks").textContent = String(tracks.length).padStart(2, "0");
-}
-
-function navigate(page) {
-  document.querySelectorAll(".page").forEach(section => section.classList.add("hidden"));
-  $(page)?.classList.remove("hidden");
-  document.querySelectorAll(".nav-item").forEach(button => {
-    button.classList.toggle("active", button.dataset.page === page);
-  });
-  const active = document.querySelector(`.nav-item[data-page="${page}"]`);
-  $("pageTitle").textContent = active ? active.textContent.trim() : "Overview";
-  $("sidebar").classList.remove("open");
-}
-
-document.querySelectorAll(".nav-item").forEach(button => {
-  button.addEventListener("click", () => navigate(button.dataset.page));
-});
-
-document.querySelectorAll("[data-go]").forEach(button => {
-  button.addEventListener("click", () => navigate(button.dataset.go));
-});
-
-$("menuBtn").addEventListener("click", () => $("sidebar").classList.toggle("open"));
-
-document.addEventListener("click", event => {
-  const button = event.target.closest("[data-company]");
-  if (!button) return;
-  const companyName = button.dataset.company;
-  alert(`${companyName} Radio\n\nDemo station details. Live stream is not connected.`);
-});
-
-const modal = $("modal");
-const form = $("modalForm");
-const valueField = $("fieldValue");
-let modalMode = "company";
-
-function openModal(mode) {
-  modalMode = mode;
-  $("modalTitle").textContent = mode === "company" ? "Add company" : "Add music track";
-  $("fieldLabel").textContent = mode === "company" ? "Company name" : "Track title";
-  valueField.value = "";
-  valueField.placeholder = mode === "company" ? "e.g. NEW COMPANY" : "e.g. Highway Journey";
-  modal.classList.remove("hidden");
-  valueField.focus();
-}
-
-function closeModal() {
-  modal.classList.add("hidden");
-}
-
-$("addCompany").addEventListener("click", () => openModal("company"));
-$("addTrack").addEventListener("click", () => openModal("track"));
-$("closeModal").addEventListener("click", closeModal);
-$("cancelModal").addEventListener("click", closeModal);
-
-modal.addEventListener("click", event => {
-  if (event.target === modal) closeModal();
-});
-
-document.addEventListener("keydown", event => {
-  if (event.key === "Escape" && !modal.classList.contains("hidden")) closeModal();
-});
-
-form.addEventListener("submit", event => {
-  event.preventDefault();
-  const value = valueField.value.trim();
-  if (!value) return;
-
-  if (modalMode === "company") {
-    if (companies.some(company => company.name.toLowerCase() === value.toLowerCase())) {
-      alert("This company already exists.");
-      return;
-    }
-
-    const name = value.slice(0, 50);
-    companies.push({
-      name,
-      station: name + " Radio",
-      code: Array.from(name)[0].toUpperCase(),
-      type: "Company radio"
-    });
-    renderCompanies();
-    renderStations();
-  } else {
-    tracks.push([value.slice(0, 100), "Unknown artist", "Uncategorized", "CNU"]);
-    renderTracks();
-  }
-
-  saveState();
-  closeModal();
-});
-
-$("trackSearch").addEventListener("input", renderTracks);
-$("categoryFilter").addEventListener("change", renderTracks);
-
-renderCompanies();
-renderStations();
-renderTracks();
+(() => {
+'use strict';
+const KEY='wayline-radio:workspace:v2',SESSION='wayline-radio:api-session:v1', $=id=>document.getElementById(id);
+const dict={
+en:{workspace:'WORKSPACE',overview:'Overview',companies:'Companies',stations:'Stations',library:'Music library',information:'Information intake',announcements:'Announcements',rights:'Rights & licensing',listener:'Listener app',localMode:'LOCAL DEMO MODE',localDesc:'Changes stay in this browser',networkOverview:'NETWORK OVERVIEW',radioOperations:'Radio operations',overviewDesc:'A clear view of your company radio network.',addCompany:'Add company',registeredCompanies:'Registered companies',configuredStations:'Configured stations',musicTracks:'Music tracks',rightsChecked:'Rights-controlled library',pendingItems:'Pending items',reviewBeforeAir:'Review before broadcast',companyStations:'Company stations',separateStations:'Separate radio environments',viewAll:'View all →',broadcastReadiness:'Broadcast readiness',basedOnConfig:'Based on current configuration',safetyFirst:'Rights first',musicBlocked:'Unverified music is blocked',rightsNote:'A track needs valid proof plus commercial and internet-streaming permission before broadcast.',honestDemo:'Environment status',demoNote:'Local demo data stays in this browser. Connect the API for shared company data.',companiesDesc:'Create and manage separate company environments.',stationsDesc:'Configure each company public audio stream.',station:'Station',company:'Company',status:'Status',libraryDesc:'Every track must carry rights metadata before broadcast.',addTrack:'Add track',track:'Track',artist:'Artist',category:'Category',license:'License',broadcast:'Broadcast',rightsDisclaimer:'Rights status is an administrative record, not legal certification.',informationDesc:'RSS/Atom collection feeds a review queue; nothing goes on air automatically.',addSource:'Add source',sources:'Configured sources',reviewQueue:'Review queue',reviewDesc:'Approve or reject collected information.',announcementsDesc:'Prepare company messages in all three languages.',createAnnouncement:'Create announcement',threeLanguagesRequired:'Three language versions required',announcementRule:'Tajik, Russian and English must all be complete before approval.',rightsPageDesc:'Review ownership and permitted-use records.',requiredMetadata:'Required track metadata',meta1:'Artist, composer and rights holder',meta2:'License type and original source',meta3:'Evidence or written permission',meta4:'Commercial broadcast permission',meta5:'Internet streaming permission',meta6:'Territory and expiry date',eligibilityRule:'Broadcast eligibility rule',eligibilityDesc:'A track is eligible only when every required rights flag is confirmed and the license is still valid.',noLegalGuarantee:'The platform cannot independently certify a license or its territory.',blockedTracks:'Tracks not cleared for broadcast',reason:'Reason'},
+ru:{workspace:'РАБОЧАЯ ОБЛАСТЬ',overview:'Обзор',companies:'Компании',stations:'Станции',library:'Музыкальная библиотека',information:'Сбор информации',announcements:'Объявления',rights:'Права и лицензии',listener:'Приложение слушателя',localMode:'ЛОКАЛЬНЫЙ ДЕМО-РЕЖИМ',localDesc:'Изменения хранятся в этом браузере',networkOverview:'ОБЗОР СЕТИ',radioOperations:'Работа радиосети',overviewDesc:'Обзор радиосети вашей компании.',addCompany:'Добавить компанию',registeredCompanies:'Зарегистрированные компании',configuredStations:'Настроенные станции',musicTracks:'Музыкальные треки',rightsChecked:'Библиотека с проверкой прав',pendingItems:'Ожидают проверки',reviewBeforeAir:'Проверить до эфира',companyStations:'Радиостанции компаний',separateStations:'Отдельные радиосреды',viewAll:'Все →',broadcastReadiness:'Готовность к эфиру',basedOnConfig:'По текущей конфигурации',safetyFirst:'Сначала права',musicBlocked:'Непроверенная музыка заблокирована',rightsNote:'Для эфира нужны доказательство прав и разрешения на коммерческое использование и интернет-вещание.',honestDemo:'Статус среды',demoNote:'Демо-данные хранятся в браузере. Подключите API для общей базы компаний.',companiesDesc:'Создание отдельных сред компаний.',stationsDesc:'Настройка публичного аудиопотока компании.',station:'Станция',company:'Компания',status:'Статус',libraryDesc:'У каждого трека должны быть указаны права.',addTrack:'Добавить трек',track:'Трек',artist:'Исполнитель',category:'Категория',license:'Лицензия',broadcast:'Эфир',rightsDisclaimer:'Статус прав — административная запись, а не юридическая сертификация.',informationDesc:'RSS/Atom-источники попадают в очередь проверки; автоматического эфира нет.',addSource:'Добавить источник',sources:'Источники',reviewQueue:'Очередь проверки',reviewDesc:'Одобрите или отклоните собранную информацию.',announcementsDesc:'Готовьте объявления на трёх языках.',createAnnouncement:'Создать объявление',threeLanguagesRequired:'Нужны три языковые версии',announcementRule:'Для одобрения нужны полные тексты на таджикском, русском и английском.',rightsPageDesc:'Учёт авторства и разрешённого использования.',requiredMetadata:'Обязательные данные трека',meta1:'Исполнитель, композитор и правообладатель',meta2:'Тип лицензии и исходный источник',meta3:'Доказательство или письменное разрешение',meta4:'Разрешение на коммерческое вещание',meta5:'Разрешение на интернет-вещание',meta6:'Территория и срок действия',eligibilityRule:'Условие допуска в эфир',eligibilityDesc:'Все разрешения должны быть подтверждены, а лицензия — действовать.',noLegalGuarantee:'Платформа не может самостоятельно подтвердить лицензию и её территорию.',blockedTracks:'Треки без допуска в эфир',reason:'Причина'},
+tg:{workspace:'ФАЗОИ КОРӢ',overview:'Шарҳи умумӣ',companies:'Ширкатҳо',stations:'Радиостансияҳо',library:'Китобхонаи мусиқӣ',information:'Ҷамъоварии маълумот',announcements:'Эълонҳо',rights:'Ҳуқуқ ва литсензия',listener:'Барномаи шунаванда',localMode:'РЕЖИМИ НАМОИШӢ',localDesc:'Тағйирот дар браузер мемонад',networkOverview:'ШАРҲИ ШАБАКА',radioOperations:'Идоракунии радио',overviewDesc:'Вазъи радиои ширкатҳои шумо.',addCompany:'Иловаи ширкат',registeredCompanies:'Ширкатҳои сабтшуда',configuredStations:'Радиостансияҳои танзимшуда',musicTracks:'Сурудҳо',rightsChecked:'Китобхонаи ҳуқуқаш санҷидашуда',pendingItems:'Дар навбати санҷиш',reviewBeforeAir:'Пеш аз эфир санҷед',companyStations:'Радиои ширкатҳо',separateStations:'Муҳити алоҳида барои ҳар ширкат',viewAll:'Ҳамаро бин →',broadcastReadiness:'Омодагӣ ба эфир',basedOnConfig:'Аз рӯи танзимоти ҷорӣ',safetyFirst:'Аввал ҳуқуқ',musicBlocked:'Мусиқии тасдиқнашуда баста аст',rightsNote:'Барои эфир далели ҳуқуқ ва иҷозати истифодаи тиҷоратӣ ва пахши интернетӣ зарур аст.',honestDemo:'Вазъи муҳит',demoNote:'Маълумоти намоишӣ дар браузер мемонад. Барои маълумоти муштарак ба API пайваст шавед.',companiesDesc:'Сохтан ва идора кардани муҳити ширкатҳо.',stationsDesc:'Танзими ҷараёни аудио барои ҳар ширкат.',station:'Радио',company:'Ширкат',status:'Вазъият',libraryDesc:'Пеш аз эфир ҳуқуқи ҳар суруд бояд сабт шавад.',addTrack:'Иловаи суруд',track:'Суруд',artist:'Иҷрокунанда',category:'Категория',license:'Литсензия',broadcast:'Эфир',rightsDisclaimer:'Вазъи ҳуқуқ сабти маъмурӣ аст, на тасдиқи мустақили ҳуқуқӣ.',informationDesc:'Маълумоти RSS/Atom ба навбати санҷиш меояд; худкор пахш намешавад.',addSource:'Иловаи манбаъ',sources:'Манбаъҳои пайвастшуда',reviewQueue:'Навбати санҷиш',reviewDesc:'Маълумоти ҷамъшударо тасдиқ ё рад кунед.',announcementsDesc:'Эълонҳои ширкатро бо се забон омода кунед.',createAnnouncement:'Сохтани эълон',threeLanguagesRequired:'Се забон ҳатмист',announcementRule:'Барои тасдиқ матнҳои тоҷикӣ, русӣ ва англисӣ бояд пур бошанд.',rightsPageDesc:'Назорати муаллифӣ ва иҷозати истифода.',requiredMetadata:'Маълумоти ҳатмии суруд',meta1:'Иҷрокунанда, оҳангсоз ва соҳиби ҳуқуқ',meta2:'Навъи литсензия ва манбаи аслӣ',meta3:'Далел ё иҷозати хаттӣ',meta4:'Иҷозати пахши тиҷоратӣ',meta5:'Иҷозати пахши интернетӣ',meta6:'Ҳудуди истифода ва муҳлати иҷозат',eligibilityRule:'Шарти иҷозат ба эфир',eligibilityDesc:'Ҳамаи иҷозатҳо бояд тасдиқ шаванд ва литсензия муҳлаташ нагузашта бошад.',noLegalGuarantee:'Система аслияти ҳуҷҷат ё ҳудуди ҳуқуқиро мустақилона тасдиқ карда наметавонад.',blockedTracks:'Сурудҳои ҳанӯз иҷозатнадошта',reason:'Сабаб'}
+};
+const base=()=>({companies:[{id:'cnu',name:'CNU',slug:'cnu',default_language:'en'},{id:'etl',name:'ETL',slug:'etl',default_language:'en'}],stations:[{id:'cnu-station',company_id:'cnu',companyId:'cnu',name:'CNU Radio',slug:'cnu-radio',stream_url:'',streamUrl:'',active:true},{id:'etl-station',company_id:'etl',companyId:'etl',name:'ETL Radio',slug:'etl-radio',stream_url:'',streamUrl:'',active:true}],tracks:[],sources:[],items:[],announcements:[]});
+function loadLocal(){try{const v=JSON.parse(localStorage.getItem(KEY));return v&&Array.isArray(v.companies)&&Array.isArray(v.stations)?{...base(),...v}:base();}catch{return base();}}
+let state=loadLocal(),lang=localStorage.getItem('wayline-language')||'en',activePage='overview',remote=null;
+try{remote=JSON.parse(sessionStorage.getItem(SESSION))||null;}catch{}
+const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const tr=k=>dict[lang]?.[k]||dict.en[k]||k;
+const selectedCompany=()=> $('companySelect').value||state.companies[0]?.id||'';
+const companyName=id=>state.companies.find(c=>c.id===id)?.name||'—';
+function toast(m){const el=$('toast');el.textContent=m;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600);}
+function save(){if(!remote)localStorage.setItem(KEY,JSON.stringify(state));render();}
+function rights(t){if(!(t.licenseVerified??t.license_verified))return 'License not verified';if(!(t.commercialAllowed??t.commercial_allowed))return 'Commercial permission missing';if(!(t.streamingAllowed??t.streaming_allowed))return 'Streaming permission missing';if(!t.licenseType&&!t.license_type)return 'License type missing';if(!(t.licenseProof||t.license_proof_url))return 'License proof missing';if(!(t.rightsHolder||t.rights_holder))return 'Rights holder missing';if((t.expires||t.license_expires_at)&&new Date((t.expires||t.license_expires_at)+'T23:59:59')<new Date())return 'License expired';if(!(t.audioUrl||t.audio_url))return 'Audio URL missing';return '';}
+const eligible=t=>!rights(t);
+function apiBase(){return (window.WAYLINE_CONFIG?.apiBase||'').replace(/\/$/,'');}
+async function api(path,method='GET',data){if(!remote?.token)throw new Error('Connect to the API first.');const headers={'authorization':'Bearer '+remote.token,'x-company-id':selectedCompany(),'accept':'application/json'};if(data!==undefined)headers['content-type']='application/json';const response=await fetch(apiBase()+path,{method,headers,body:data===undefined?undefined:JSON.stringify(data)});const payload=await response.json().catch(()=>({}));if(!response.ok)throw new Error(payload.error||'API request failed ('+response.status+')');return payload;}
+async function refreshRemote(){if(!remote)return;try{const companies=(remote.companies||[]).map(c=>({id:c.id,name:c.name,slug:c.slug,default_language:c.default_language}));if(!companies.length)throw new Error('This account has no company access.');state.companies=companies;setOptions();if(!companies.some(c=>c.id===selectedCompany()))$('companySelect').value=companies[0].id;const [st,trk,src,info,ann]=await Promise.all([api('/api/v1/admin/stations'),api('/api/v1/admin/tracks'),api('/api/v1/admin/sources'),api('/api/v1/admin/information'),api('/api/v1/admin/announcements')]);const cid=selectedCompany();state.stations=(st.stations||[]).map(s=>({...s,companyId:cid,streamUrl:s.stream_url||''}));state.tracks=(trk.tracks||[]).map(t=>({...t,companyId:cid,licenseType:t.license_type,licenseProof:t.license_proof_url,rightsHolder:t.rights_holder,licenseVerified:t.license_verified,commercialAllowed:t.commercial_allowed,streamingAllowed:t.streaming_allowed,audioUrl:t.audio_url,expires:t.license_expires_at,category:t.category_name||'Uncategorized',composer:t.composer||''}));state.sources=(src.sources||[]).map(s=>({id:s.id,companyId:cid,name:s.name,url:s.feed_url,language:s.original_language,enabled:s.is_enabled,createdAt:s.created_at}));state.items=(info.items||[]).map(i=>({id:i.id,companyId:cid,title:i.title_original,body:i.body_original,url:i.source_url,sourceName:i.source_name,status:i.status}));state.announcements=(ann.announcements||[]).map(a=>({id:a.id,companyId:cid,status:a.status,...a}));$('apiConnect').textContent='Disconnect API';$('modeLabel').textContent='CONNECTED API';$('modeLabel').classList.add('connected');render();}catch(e){toast(e.message);if(/expired|invalid token|disabled/i.test(e.message))disconnect();}}
+async function connect(){const email=prompt('Admin email:');if(!email)return;const password=prompt('Password:');if(!password)return;try{const response=await fetch(apiBase()+'/api/v1/auth/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email,password})});const data=await response.json();if(!response.ok)throw new Error(data.error||'Login failed');remote={token:data.token,companies:data.companies||[],user:data.user};sessionStorage.setItem(SESSION,JSON.stringify(remote));if(!remote.companies.length)throw new Error('This user has no company memberships.');$('companySelect').value=remote.companies[0].id;await refreshRemote();toast('Connected to WAYLINE API');}catch(e){toast(e.message);}}
+function disconnect(){remote=null;sessionStorage.removeItem(SESSION);state=loadLocal();$('apiConnect').textContent='Connect API';$('modeLabel').textContent=tr('localMode');$('modeLabel').classList.remove('connected');render();toast('Returned to local demo mode');}
+function setOptions(){const el=$('companySelect'),old=el.value,arr=remote?.companies||state.companies;el.innerHTML=arr.map(c=>'<option value="'+escape(c.id)+'">'+escape(c.name)+'</option>').join('');if(arr.some(c=>c.id===old))el.value=old;}
+function card(c){const station=state.stations.find(s=>(s.companyId||s.company_id)===c.id);return '<article class="company-card"><div class="company-mark '+(c.slug==='etl'?'blue':'')+'">'+escape(c.name.slice(0,1).toUpperCase())+'</div><div class="company-info"><strong>'+escape(c.name)+' Radio</strong><small>'+escape(station?.slug||'Station not configured')+'</small></div><span class="status '+((station?.streamUrl||station?.stream_url)?'good':'warn')+'">'+((station?.streamUrl||station?.stream_url)?'Stream set':'No stream')+'</span></article>';}
+function renderOverview(){const c=state.companies.length,s=state.stations.length,t=state.tracks.filter(x=>!x.archived).length,p=state.items.filter(i=>i.status==='pending').length;$('statCompanies').textContent=c;$('statStations').textContent=s;$('statTracks').textContent=t;$('statPending').textContent=p;$('overviewCompanies').innerHTML=state.companies.map(card).join('')||'<div class="empty">No companies</div>';const st=state.stations.filter(x=>(x.companyId||x.company_id)===selectedCompany()),tracks=state.tracks.filter(x=>(x.companyId||x.company_id)===selectedCompany());$('readinessList').innerHTML=[['Company station',st.length?'Configured':'Missing'],['Public stream',st.some(x=>x.streamUrl||x.stream_url)?'URL configured':'Not configured'],['Rights-cleared tracks',tracks.filter(eligible).length+' / '+tracks.length],['Pending information',p+' awaiting review']].map(([a,b])=>'<div class="activity"><span class="activity-icon">◉</span><div><strong>'+escape(a)+'</strong><small>'+escape(b)+'</small></div></div>').join('');}
+function renderCompanies(){$('companyList').innerHTML=state.companies.map(card).join('')||'<div class="empty">No companies yet.</div>';}
+function renderStations(){const rows=state.stations.filter(s=>(s.companyId||s.company_id)===selectedCompany());$('stationRows').innerHTML=rows.map(s=>'<tr><td><strong>'+escape(s.name)+'</strong><br><small>'+escape(s.slug)+'</small></td><td>'+escape(companyName(s.companyId||s.company_id))+'</td><td>'+escape(s.streamUrl||s.stream_url||'Not configured')+'</td><td><span class="status '+((s.streamUrl||s.stream_url)?'good':'warn')+'">'+((s.streamUrl||s.stream_url)?'URL set':'Offline / no URL')+'</span></td><td><button class="mini-btn" data-action="edit-stream" data-id="'+escape(s.id)+'">Configure</button></td></tr>').join('')||'<tr><td colspan="5">No station configured.</td></tr>';}
+function renderTracks(){const q=$('trackSearch').value.toLowerCase(),cat=$('categoryFilter').value;const rows=state.tracks.filter(t=>(t.companyId||t.company_id)===selectedCompany()&&(!q||[t.title,t.artist,t.composer].join(' ').toLowerCase().includes(q))&&(cat==='all'||(t.category||t.category_name)===cat));$('trackRows').innerHTML=rows.map(t=>'<tr><td><strong>'+escape(t.title)+'</strong><br><small>'+escape(t.composer||'')+'</small></td><td>'+escape(t.artist)+'</td><td>'+escape(t.category||t.category_name||'Uncategorized')+'</td><td>'+escape(t.licenseType||t.license_type||'—')+'</td><td><span class="status '+(eligible(t)?'good':'warn')+'">'+(eligible(t)?'Eligible':'Blocked')+'</span></td><td><button class="mini-btn danger" data-action="delete-track" data-id="'+escape(t.id)+'">Archive</button></td></tr>').join('')||'<tr><td colspan="6">No tracks match. Add only content you are authorized to broadcast.</td></tr>';$('blockedRows').innerHTML=rows.filter(t=>!eligible(t)).map(t=>'<tr><td>'+escape(t.title)+'</td><td>'+escape(t.artist)+'</td><td>'+escape(rights(t))+'</td></tr>').join('')||'<tr><td colspan="3">No blocked tracks in this company.</td></tr>';}
+function renderSources(){const rows=state.sources.filter(s=>s.companyId===selectedCompany());$('sourceList').innerHTML=rows.map(s=>'<div class="list-row"><div class="list-main"><strong>'+escape(s.name)+' <span class="status '+(s.enabled?'good':'warn')+'">'+(s.enabled?'Enabled':'Paused')+'</span></strong><p>'+escape(s.url)+'</p><p>Language: '+escape((s.language||'en').toUpperCase())+' · '+escape(s.createdAt?new Date(s.createdAt).toLocaleDateString():'')}</p></div><div class="list-actions"><button class="mini-btn" data-action="toggle-source" data-id="'+escape(s.id)+'">'+(s.enabled?'Pause':'Enable')+'</button></div></div>').join('')||'<div class="empty">No feed sources configured for this company.</div>';const items=state.items.filter(i=>i.companyId===selectedCompany());$('informationList').innerHTML=items.map(i=>'<div class="list-row"><div class="list-main"><strong>'+escape(i.title)+' <span class="status '+(i.status==='approved'?'good':i.status==='rejected'?'bad':'warn')+'">'+escape(i.status)+'</span></strong><p>'+escape(i.body)+'</p><p>'+escape(i.sourceName||'Manual source')+' · '+escape(i.url||'')+'</p></div><div class="list-actions">'+(i.status==='pending'?'<button class="mini-btn approve" data-action="approve-info" data-id="'+escape(i.id)+'">Approve</button><button class="mini-btn danger" data-action="reject-info" data-id="'+escape(i.id)+'">Reject</button>':'')+'</div></div>').join('')||'<div class="empty">No collected information yet. Configure an HTTPS RSS/Atom source.</div>';}
+function renderAnnouncements(){const rows=state.announcements.filter(a=>a.companyId===selectedCompany());$('announcementList').innerHTML=rows.map(a=>'<div class="list-row"><div class="list-main"><strong>'+escape(a.title_en||a.title_ru||a.title_tg||'Untitled')+' <span class="status '+(a.status==='approved'?'good':'warn')+'">'+escape(a.status)+'</span></strong><p>TJ: '+escape(a.title_tg||'—')+' · RU: '+escape(a.title_ru||'—')+' · EN: '+escape(a.title_en||'—')+'</p><p>'+escape(a.body_en||a.body_ru||a.body_tg||'')+'</p></div><div class="list-actions">'+(a.status==='draft'?'<button class="mini-btn approve" data-action="approve-announcement" data-id="'+escape(a.id)+'">Approve</button>':'')+'</div></div>').join('')||'<div class="empty">No announcements created.</div>';}
+function render(){setOptions();renderOverview();renderCompanies();renderStations();renderTracks();renderSources();renderAnnouncements();document.documentElement.lang=lang;document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(tr(k))el.textContent=tr(k);});$('pageTitle').textContent=tr(activePage==='library'?'library':activePage);$('languageSelect').value=lang;if(!remote){$('apiConnect').textContent='Connect API';$('modeLabel').textContent=tr('localMode');$('modeLabel').classList.remove('connected');}}
+function navigate(page){activePage=page;document.querySelectorAll('.page').forEach(p=>p.classList.toggle('hidden',p.id!==page));document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.page===page));$('pageTitle').textContent=tr(page==='library'?'library':page);$('sidebar').classList.remove('open');}
+async function addCompany(){const name=prompt('Company name:');if(!name?.trim())return;if(remote){try{await api('/api/v1/admin/companies','POST',{name:name.trim()});const c=await api('/api/v1/admin/companies');remote.companies=c.companies;await refreshRemote();toast('Company created');}catch(e){toast(e.message);}return;}const slug=name.trim().normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');if(state.companies.some(c=>c.slug===slug)){toast('Company already exists');return;}const id='c-'+Date.now();state.companies.push({id,name:name.trim().slice(0,80),slug});state.stations.push({id:'s-'+Date.now(),companyId:id,name:name.trim()+' Radio',slug:slug+'-radio',streamUrl:'',active:true});save();toast('Company and station created');}
+async function addTrack(){const title=prompt('Track title:');if(!title?.trim())return;const artist=prompt('Artist / performer:');if(!artist?.trim())return;const composer=prompt('Composer:')||'',category=prompt('Category:')||'Uncategorized',licenseType=prompt('Exact license type or written agreement:')||'',licenseProof=prompt('Proof URL or document reference:')||'',rightsHolder=prompt('Rights holder:')||'',audioUrl=prompt('Public audio URL (https://...):')||'',commercial=prompt('Commercial broadcast explicitly permitted? Type YES only if checked:')==='YES',streaming=prompt('Internet streaming explicitly permitted? Type YES only if checked:')==='YES',verified=prompt('Have you inspected the actual rights document? Type VERIFY:')==='VERIFY',expires=prompt('Expiry date YYYY-MM-DD (blank if perpetual):')||'';const track={title,artist,composer,category,licenseType,licenseProof,rightsHolder,audioUrl,commercialAllowed:commercial,streamingAllowed:streaming,licenseVerified:verified,expires};if(remote){try{const r=await api('/api/v1/admin/tracks','POST',{title,artist,composer,category,license_type:licenseType,license_proof_url:licenseProof,rights_holder:rightsHolder,audio_url:audioUrl,commercial_allowed:commercial,streaming_allowed:streaming,license_verified:verified,license_expires_at:expires||null});await refreshRemote();toast(r.policy_reason||'Track stored');}catch(e){toast(e.message);}return;}state.tracks.unshift({id:'t-'+Date.now(),companyId:selectedCompany(),...track});save();toast(eligible(track)?'Track eligible by entered metadata':'Track saved but blocked until rights are complete');}
+async function addSource(){const name=prompt('Source name:');if(!name?.trim())return;const url=prompt('HTTPS RSS/Atom feed URL:');if(!url)return;try{const u=new URL(url);if(u.protocol!=='https:'||['localhost','127.0.0.1','::1'].includes(u.hostname))throw new Error();}catch{toast('Only valid HTTPS feed URLs are accepted');return;}const language=(prompt('Original language: tg / ru / en','en')||'en').toLowerCase();if(!['tg','ru','en'].includes(language)){toast('Language must be tg, ru or en');return;}if(remote){try{await api('/api/v1/admin/sources','POST',{name:name.trim(),feed_url:url,original_language:language});await refreshRemote();toast('Source added to the collector');}catch(e){toast(e.message);}return;}state.sources.unshift({id:'src-'+Date.now(),companyId:selectedCompany(),name:name.trim(),url,language,enabled:true,createdAt:new Date().toISOString()});save();toast('Saved locally. Deploy the collector to start fetching.');}
+async function addAnnouncement(){const a={id:'a-'+Date.now(),companyId:selectedCompany(),status:'draft'};for(const l of ['tg','ru','en']){a['title_'+l]=prompt('Title ('+l.toUpperCase()+'):')||'';a['body_'+l]=prompt('Message ('+l.toUpperCase()+'):')||'';}if(remote){try{await api('/api/v1/admin/announcements','POST',a);await refreshRemote();toast('Announcement draft saved');}catch(e){toast(e.message);}return;}state.announcements.unshift(a);save();toast(['tg','ru','en'].every(l=>a['title_'+l].trim()&&a['body_'+l].trim())?'Draft saved':'Draft saved; missing languages prevent approval');}
+async function action(b){const id=b.dataset.id,a=b.dataset.action;if(a==='add-company')return addCompany();if(a==='add-track')return addTrack();if(a==='add-source')return addSource();if(a==='add-announcement')return addAnnouncement();if(a==='edit-stream'){const s=state.stations.find(x=>x.id===id);if(!s)return;const url=prompt('Public stream URL (https:// or http://):',s.streamUrl||s.stream_url||'');if(url===null)return;if(url&&!/^https?:\/\//i.test(url)){toast('Enter a valid HTTP(S) URL');return;}try{if(remote)await api('/api/v1/admin/stations/'+id,'PATCH',{stream_url:url.trim()||null});else s.streamUrl=url.trim();if(remote)await refreshRemote();else save();toast('Stream URL saved. Test it in listener app.');}catch(e){toast(e.message);}}if(a==='delete-track'){if(!confirm('Archive this track?'))return;try{if(remote)await api('/api/v1/admin/tracks/'+id,'DELETE');else state.tracks=state.tracks.filter(x=>x.id!==id);if(remote)await refreshRemote();else save();}catch(e){toast(e.message);}}if(a==='toggle-source'){const s=state.sources.find(x=>x.id===id);if(!s)return;try{if(remote)await api('/api/v1/admin/sources/'+id,'PATCH',{is_enabled:!s.enabled});else s.enabled=!s.enabled;if(remote)await refreshRemote();else save();}catch(e){toast(e.message);}}if(a==='approve-info'||a==='reject-info'){const status=a==='approve-info'?'approved':'rejected';try{if(remote){const item=state.items.find(x=>x.id===id);const payload={status};if(status==='approved'){for(const l of ['tg','ru','en']){const useOriginal=item.original_language===l;payload['title_'+l]=useOriginal?item.title:prompt('Title ('+l.toUpperCase()+'):',item['title_'+l]||'')||'';payload['body_'+l]=useOriginal?item.body:prompt('Text ('+l.toUpperCase()+'):',item['body_'+l]||'')||'';}if(!['tg','ru','en'].every(l=>payload['title_'+l].trim()&&payload['body_'+l].trim())){toast('Complete all three translations first');return;}}await api('/api/v1/admin/information/'+id,'PATCH',payload);}else{const i=state.items.find(x=>x.id===id);if(i)i.status=status;}if(remote)await refreshRemote();else save();}catch(e){toast(e.message);}}if(a==='approve-announcement'){const item=state.announcements.find(x=>x.id===id);if(!item)return;try{if(remote)await api('/api/v1/admin/announcements/'+id,'PATCH',{status:'approved'});else{if(!['tg','ru','en'].every(l=>(item['title_'+l]||'').trim()&&(item['body_'+l]||'').trim())){toast('Complete all three language versions first');return;}item.status='approved';}if(remote)await refreshRemote();else save();toast('Approved; broadcasting still requires a configured radio engine.');}catch(e){toast(e.message);}}}
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.page)navigate(b.dataset.page);if(b.dataset.go)navigate(b.dataset.go);if(b.dataset.action)action(b);});
+$('menuBtn').addEventListener('click',()=>$('sidebar').classList.toggle('open'));
+$('companySelect').addEventListener('change',()=>remote?refreshRemote():render());
+$('languageSelect').addEventListener('change',e=>{lang=e.target.value;localStorage.setItem('wayline-language',lang);render();});
+$('trackSearch').addEventListener('input',renderTracks);$('categoryFilter').addEventListener('change',renderTracks);
+$('apiConnect').addEventListener('click',()=>remote?disconnect():connect());
+window.addEventListener('storage',e=>{if(e.key===KEY&&!remote){state=loadLocal();render();}});
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+render();navigate('overview');if(remote){$('companySelect').value=remote.companies?.[0]?.id||'';refreshRemote();}
+})();
