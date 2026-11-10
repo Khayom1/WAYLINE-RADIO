@@ -16,4 +16,4 @@ sed \
   -e "s/__ICECAST_ADMIN_PASSWORD__/${ICECAST_ADMIN_PASSWORD}/g" \
   /etc/icecast2/icecast.xml.template > /run/icecast.xml
 
-exec icecast2 -c /run/icecast.xml -n
+exec icecast2 -c /run/icecast.xml
