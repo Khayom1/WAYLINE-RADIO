@@ -6,7 +6,7 @@ import { Pool } from 'pg';
 if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required.');
 const rl = createInterface({ input, output });
 const ask = question => rl.question(question);
-const db = new Pool({ connectionString: process.env.DATABASE_URL });
+const db = new Pool({ connectionString: process.env.DATABASE_URL, ssl: process.env.PGSSLMODE === 'require' ? { rejectUnauthorized: true } : undefined });
 let client;
 try {
   const email = (await ask('Admin email: ')).trim().toLowerCase();
