@@ -26,4 +26,4 @@ Please allow maintainers reasonable time to investigate and release a fix before
 
 ## Scope
 
-The RSS collector accepts HTTPS feeds and applies URL/IP checks. Network-level egress filtering is still recommended because DNS answers can change between validation and connection. The application is not a substitute for a hardened network boundary.
+The RSS collector accepts HTTPS feeds, rejects private and reserved IP addresses, and pins the TLS connection to the previously validated DNS address to prevent DNS rebinding. Network-level egress filtering is still recommended as defense in depth. The application is not a substitute for a hardened network boundary.
