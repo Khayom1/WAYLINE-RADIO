@@ -62,7 +62,7 @@ Company permissions are resolved from the selected company's membership, not onl
 - `GET /api/v1/health` — database-backed health check.
 - `GET /api/v1/public/stations` — active public stations.
 - `GET /api/v1/public/stations/:slug` — one active station.
-- `GET /api/v1/public/announcements` — approved and published announcements whose scheduled time has arrived.
+- `GET /api/v1/public/announcements` — approved, scheduled and published announcements whose scheduled time has arrived.
 - `POST /api/v1/auth/login` — sign in and receive a signed session.
 - `/api/v1/admin/*` — authenticated company-scoped administration.
 
