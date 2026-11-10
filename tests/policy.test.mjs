@@ -34,3 +34,9 @@ test('license expiry date remains valid through the stated calendar day',()=>{
   assert.equal(canBroadcastTrack({...eligible,license_expires_at:'2026-11-09'},now).allowed,false);
   assert.equal(canBroadcastTrack({...eligible,license_expires_at:'2026-02-30'},now).allowed,false);
 });
+
+test('feed validation blocks reserved IPv4 and special-purpose IPv6 ranges',()=>{
+  for(const ip of ['192.0.0.8','192.0.2.10','198.18.0.1','198.51.100.20','203.0.113.9','224.0.0.1']) assert.equal(validateFeedUrl('https://'+ip+'/feed').valid,false,ip);
+  for(const ip of ['[2001:db8::1]','[2001:10::1]','[2001:20::1]','[64:ff9b::1]']) assert.equal(validateFeedUrl('https://'+ip+'/feed').valid,false,ip);
+  assert.equal(validateFeedUrl('https://198.51.99.1/feed').valid,true);
+});
