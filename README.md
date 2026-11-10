@@ -52,3 +52,32 @@ The software is released under the MIT License. That software license does not g
 ## Maintainer
 
 Project: [Khayom1/WAYLINE-RADIO](https://github.com/Khayom1/WAYLINE-RADIO)
+
+## Access control
+
+Company permissions are resolved from the selected company's membership, not only from a user's global account role. A viewer membership is read-only even if the same account has elevated access elsewhere. Platform administrators retain platform-wide company access.
+
+## Public API
+
+- `GET /api/v1/health` — database-backed health check.
+- `GET /api/v1/public/stations` — active public stations.
+- `GET /api/v1/public/stations/:slug` — one active station.
+- `GET /api/v1/public/announcements` — approved and published announcements whose scheduled time has arrived.
+- `POST /api/v1/auth/login` — sign in and receive a signed session.
+- `/api/v1/admin/*` — authenticated company-scoped administration.
+
+## Validation
+
+Run syntax and policy tests locally:
+
+```sh
+npm install
+npm run check
+npm test
+```
+
+Android-only contributors can follow [the Termux testing guide](docs/TERMUX-TESTING.md). See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md) before submitting changes.
+
+## Project authorship
+
+Maintainer and original project author: **Khayom Abdurahmonov**. The software is MIT-licensed; music, recordings, logos, news feeds and other third-party materials remain subject to their own rights and licenses.
