@@ -28,7 +28,7 @@ A track is blocked unless the rights holder, license type, HTTPS proof URL, comm
 
 ## Optional external streaming / AutoDJ
 
-A station may instead point to an externally managed HTTP(S) stream such as an AzuraCast station. The external streaming service then owns its playlists and playout schedule. Never put provider API keys in browser JavaScript.
+A station may instead point to an externally managed public HTTPS stream such as an AzuraCast station. External URLs containing credentials or resolving to private/reserved addresses are rejected. The external streaming service then owns its playlists and playout schedule. Never put provider API keys in browser JavaScript.
 
 ## RSS and TTS
 
