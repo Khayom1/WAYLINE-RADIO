@@ -24,14 +24,13 @@ WAYLINE RADIO is designed around separate company stations (starting with CNU Ra
 3. Set `PUBLIC_DOMAIN` to the real public hostname whose DNS points to the Linux host. `localhost` is only for local testing.
 4. Allow inbound TCP ports 80 and 443 (and UDP 443 for HTTP/3). Do not expose PostgreSQL 5432 or Icecast 8000.
 5. Run `docker compose up --build -d`; check with `docker compose ps` and `docker compose logs -f api icecast broadcaster`.
-6. Use `https://YOUR_DOMAIN/` for the listener and `https://YOUR_DOMAIN/admin` for the control center. Caddy requests and renews the public TLS certificate when DNS and firewall configuration are correct.
 5. Create the first administrator from a shell with access to the running database:
 
 ```bash
-docker compose exec api node scripts/create-admin.mjs
+docker compose exec api npm run create-admin
 ```
 
-6. Open `/admin`, select **Connect API**, and sign in using the administrator email/password created above. The control center also offers an isolated local demo mode.
+6. Open `https://YOUR_DOMAIN/` for the listener and `https://YOUR_DOMAIN/admin` for the control center. Select **Connect API** and sign in using the administrator credentials. Caddy requests and renews the public TLS certificate when DNS and firewall configuration are correct. The control center also offers an isolated local demo mode.
 
 ## Mobile / Termux development
 
