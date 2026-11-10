@@ -218,3 +218,21 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+# Node.js / WAYLINE local runtime
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+coverage/
+.nyc_output/
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+storage/
+wayline-tts/
+*.bak
+*.tmp
+.DS_Store
+Thumbs.db
