@@ -27,3 +27,10 @@ test('feed validation rejects local suffixes and strips embedded credentials',()
   assert.equal(new URL(safe.url).username,'');
   assert.equal(new URL(safe.url).password,'');
 });
+
+test('license expiry date remains valid through the stated calendar day',()=>{
+  const now=new Date('2026-11-10T18:30:00.000Z');
+  assert.equal(canBroadcastTrack({...eligible,license_expires_at:'2026-11-10'},now).allowed,true);
+  assert.equal(canBroadcastTrack({...eligible,license_expires_at:'2026-11-09'},now).allowed,false);
+  assert.equal(canBroadcastTrack({...eligible,license_expires_at:'2026-02-30'},now).allowed,false);
+});
