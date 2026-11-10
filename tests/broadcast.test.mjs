@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { audioExtension, hasAudioSignature } from '../apps/api/src/media.js';
+import { Readable } from 'node:stream';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { audioExtension, hasAudioSignature, storeAudio } from '../apps/api/src/media.js';
 import { ffconcatFile, managedAudioPath, safeMount } from '../apps/worker/src/broadcast-policy.js';
 
 test('managed audio paths accept only generated upload names below the media root', () => {
@@ -34,4 +38,34 @@ test('audio uploads are restricted to supported audio types and matching signatu
   assert.equal(hasAudioSignature(Buffer.from('ID3' + 'x'.repeat(16)), '.mp3'), true);
   assert.equal(hasAudioSignature(Buffer.from('RIFF0000WAVEfmt '), '.wav'), true);
   assert.equal(hasAudioSignature(Buffer.from('<html>not audio</html>'), '.mp3'), false);
+});
+
+
+test('audio upload stores bounded verified media with a generated private filename', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'wayline-media-test-'));
+  try {
+    const bytes = Buffer.concat([Buffer.from('ID3'), Buffer.alloc(2048, 7)]);
+    const request = Readable.from([bytes]);
+    request.headers = { 'content-type': 'audio/mpeg', 'content-length': String(bytes.length), 'x-audio-filename': 'song.mp3' };
+    const saved = await storeAudio(request, root);
+    assert.match(saved.path, /^uploads\/[a-f0-9-]{36}\.mp3$/i);
+    assert.equal(saved.mime, 'audio/mpeg');
+    assert.equal(saved.size, bytes.length);
+    assert.deepEqual(await readFile(saved.file), bytes);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('audio upload rejects mismatched content and removes partial files', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'wayline-media-test-'));
+  try {
+    const request = Readable.from([Buffer.from('<html>' + 'x'.repeat(2000))]);
+    request.headers = { 'content-type': 'audio/mpeg', 'content-length': '2013', 'x-audio-filename': 'fake.mp3' };
+    await assert.rejects(storeAudio(request, root), error => error.status === 415);
+    const { readdir } = await import('node:fs/promises');
+    assert.deepEqual(await readdir(join(root, 'uploads')).catch(() => []), []);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
