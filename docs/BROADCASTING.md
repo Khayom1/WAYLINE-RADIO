@@ -2,7 +2,7 @@
 
 ## What runs the radio
 
-The API accepts private managed audio uploads. The broadcaster worker checks every active station and its company's tracks, applies the same rights policy as the API, writes an FFmpeg concat playlist and starts an FFmpeg source process. That process re-encodes audio to MP3 and sends it to the private Icecast service. Listeners connect to the API at /stream/STATION-SLUG; the API proxies the stream from Icecast.
+The API accepts private managed audio uploads up to 30 MiB. All uploaded formats are validated by header signature and transcoded by FFmpeg to MP3 at 128 kbps, 44.1 kHz stereo (maximum one-hour duration and 64 MiB normalized output). The broadcaster worker checks every active station and its company's tracks, applies the same rights policy as the API, writes an FFmpeg concat playlist and starts an FFmpeg source process. That process re-encodes audio to MP3 and sends it to the private Icecast service. Listeners connect to the API at /stream/STATION-SLUG; the API proxies the stream from Icecast.
 
 The seeded stations are cnu-radio and etl-radio. A newly created company gets a station and the broadcaster automatically discovers it through the database.
 
