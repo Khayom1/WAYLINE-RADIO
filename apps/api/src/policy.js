@@ -28,9 +28,12 @@ function isPrivateIPv4(ip) {
 
 function isPrivateIPv6(host) {
   const h = host.toLowerCase();
-  if (h === '::' || h === '::1' || h.startsWith('fc') || h.startsWith('fd') || h.startsWith('fe8') || h.startsWith('fe9') || h.startsWith('fea') || h.startsWith('feb') || h.startsWith('ff')) return true;
-  const mapped = h.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
-  if (mapped) return isPrivateIPv4(mapped[1]);
+  // URL.hostname canonicalizes IPv4-mapped IPv6 literals to hexadecimal
+  // (for example, ::ffff:127.0.0.1 becomes ::ffff:7f00:1).
+  // Reject the entire mapped range rather than risk bypassing IPv4 checks.
+  if (h.startsWith('::ffff:')) return true;
+  if (h === '::' || h === '::1' || h.startsWith('fc') || h.startsWith('fd') ||
+      /^fe[89ab]/.test(h) || h.startsWith('ff') || h.startsWith('2001:db8:')) return true;
   return false;
 }
 
