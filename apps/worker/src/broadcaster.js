@@ -10,7 +10,8 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: process
 const MEDIA_DIR = resolve(process.env.MEDIA_DIR || '/var/wayline-media');
 const PLAYLIST_DIR = resolve(process.env.BROADCAST_PLAYLIST_DIR || '/var/wayline-broadcast');
 const ICECAST_HOST = process.env.ICECAST_HOST || 'icecast';
-const ICECAST_PORT = Math.max(1, Math.min(65535, Number(process.env.ICECAST_PORT || 8000)));
+const ICECAST_PORT_RAW = Number(process.env.ICECAST_PORT || 8000);
+const ICECAST_PORT = Number.isFinite(ICECAST_PORT_RAW) ? Math.max(1, Math.min(65535, Math.floor(ICECAST_PORT_RAW))) : 8000;
 const SOURCE_PASSWORD = process.env.ICECAST_SOURCE_PASSWORD || '';
 const BITRATE = /^[0-9]{2,3}k$/.test(process.env.BROADCAST_BITRATE || '') ? process.env.BROADCAST_BITRATE : '128k';
 const POLL_RAW = Number(process.env.BROADCAST_POLL_MS || 15000);
@@ -71,7 +72,7 @@ async function tick() {
     for (const track of result.rows) {
       const slug = String(track.station_slug || '');
       if (!safeMount(slug) || !canBroadcastTrack(track).allowed) continue;
-      const file = managedAudioPath(track.audio_file_path);
+      const file = managedAudioPath(track.audio_file_path, MEDIA_DIR);
       if (!file) { console.error('Rejected unsafe managed audio path on track', track.id); continue; }
       try {
         const info = await stat(file);
