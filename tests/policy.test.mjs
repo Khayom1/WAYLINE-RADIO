@@ -13,3 +13,17 @@ test('RSS feed URLs must use HTTPS and public hosts',()=>{
   assert.equal(validateFeedUrl('https://127.0.0.1/feed').valid,false);
   assert.equal(validateFeedUrl('https://localhost/feed').valid,false);
 });
+test('feed validation blocks private IPv6 and mapped loopback addresses',()=>{
+  assert.equal(validateFeedUrl('https://[::1]/feed').valid,false);
+  assert.equal(validateFeedUrl('https://[fd00::1]/feed').valid,false);
+  assert.equal(validateFeedUrl('https://[fe80::1]/feed').valid,false);
+  assert.equal(validateFeedUrl('https://[::ffff:127.0.0.1]/feed').valid,false);
+});
+test('feed validation rejects local suffixes and strips embedded credentials',()=>{
+  assert.equal(validateFeedUrl('https://router.local/feed').valid,false);
+  assert.equal(validateFeedUrl('https://server.localhost/feed').valid,false);
+  const safe=validateFeedUrl('https://user:secret@feeds.example.org/rss');
+  assert.equal(safe.valid,true);
+  assert.equal(new URL(safe.url).username,'');
+  assert.equal(new URL(safe.url).password,'');
+});
