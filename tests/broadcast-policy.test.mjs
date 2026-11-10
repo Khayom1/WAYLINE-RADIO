@@ -20,8 +20,8 @@ test('Icecast mount names are constrained before process launch', () => {
 test('FFmpeg concat paths escape quote and backslash characters', () => {
   const expected = [
     "file '/var/audio/a.mp3'",
-    "file '/var/audio/it'\\\\''s.mp3'",
-    "file '/var/audio/a\\\\\\\\b.mp3'"
-  ].join('\\n') + '\\n';
+    "file '/var/audio/it'\\''s.mp3'",
+    "file '/var/audio/a\\\\b.mp3'"
+  ].join('\n') + '\n';
   assert.equal(ffconcatFile(['/var/audio/a.mp3', "/var/audio/it's.mp3", '/var/audio/a\\b.mp3']), expected);
 });
