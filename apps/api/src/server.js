@@ -1,13 +1,18 @@
 import { createServer } from 'node:http';
-import { readFile, stat } from 'node:fs/promises';
+import { Readable } from 'node:stream';
+import { mkdir, rm, stat } from 'node:fs/promises';
 import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomBytes, scryptSync, timingSafeEqual, createHmac } from 'node:crypto';
 import { Pool } from 'pg';
 import { canBroadcastTrack, validateFeedUrl } from './policy.js';
+import { storeAudio } from './media.js';
+import { migrateDatabase } from './migrations.js';
 
 const ROOT=resolve(fileURLToPath(new URL('../../../',import.meta.url)));
 const WEB=resolve(ROOT,'apps/web');
+const MEDIA_DIR=resolve(process.env.MEDIA_DIR||resolve(ROOT,'storage/wayline-media'));
+const ICECAST_URL=(process.env.ICECAST_INTERNAL_URL||'http://icecast:8000').replace(/\/$/,'');
 const PORT=Number(process.env.PORT||8080);
 const JWT_SECRET=process.env.JWT_SECRET||'';
 const pool=new Pool({connectionString:process.env.DATABASE_URL,ssl:process.env.PGSSLMODE==='require'?{rejectUnauthorized:true}:undefined,max:12});
