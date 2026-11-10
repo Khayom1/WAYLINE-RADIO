@@ -26,6 +26,14 @@ function isPrivateIPv4(ip) {
     (p[0] === 100 && p[1] >= 64 && p[1] <= 127) || p[0] >= 224;
 }
 
+function isPrivateIPv6(host) {
+  const h = host.toLowerCase().replace(/^\\[|\\]$/g, '');
+  if (h === '::' || h === '::1' || h.startsWith('fc') || h.startsWith('fd') || h.startsWith('fe8') || h.startsWith('fe9') || h.startsWith('fea') || h.startsWith('feb') || h.startsWith('ff')) return true;
+  const mapped = h.match(/^::ffff:(\\d+\\.\\d+\\.\\d+\\.\\d+)$/);
+  if (mapped) return isPrivateIPv4(mapped[1]);
+  return false;
+}
+
 export function validateFeedUrl(value) {
   let url;
   try { url = new URL(value); } catch { return { valid: false, reason: 'Invalid URL.' }; }
@@ -36,7 +44,7 @@ export function validateFeedUrl(value) {
   }
   const ipType = net.isIP(host);
   if (ipType === 4 && isPrivateIPv4(host)) return { valid: false, reason: 'Private IP addresses are not allowed.' };
-  if (ipType === 6 && (host === '::1' || host.startsWith('fc') || host.startsWith('fd') || host.startsWith('fe80'))) {
+  if (ipType === 6 && isPrivateIPv6(host)) {
     return { valid: false, reason: 'Private IP addresses are not allowed.' };
   }
   url.username = '';
