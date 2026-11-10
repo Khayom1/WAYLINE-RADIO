@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { canBroadcastTrack, validateFeedUrl } from '../apps/api/src/policy.js';
+import { canBroadcastTrack, isValidDateOnly, validateFeedUrl } from '../apps/api/src/policy.js';
 
 const eligible={is_active:true,license_verified:true,commercial_allowed:true,streaming_allowed:true,license_type:'CC BY 4.0',audio_file_path:'uploads/4d1f4d12-03d6-4c5f-9d4f-5d9c2c9b11a1.mp3',license_proof_url:'https://licenses.example.org/proof',rights_holder:'Test Label'};
 test('track is eligible only when every rights condition is explicit',()=>{assert.equal(canBroadcastTrack(eligible).allowed,true);});
@@ -46,3 +46,5 @@ test('live broadcast requires a normalized managed MP3 upload',()=>{
   assert.equal(canBroadcastTrack({...eligible,audio_file_path:null,audio_url:'https://cdn.example.org/song.mp3'}).allowed,false);
   assert.equal(canBroadcastTrack({...eligible,audio_file_path:'uploads/4d1f4d12-03d6-4c5f-9d4f-5d9c2c9b11a1.wav'}).allowed,false);
 });
+
+test('license expiry parser rejects impossible or non-canonical dates',()=>{assert.equal(isValidDateOnly('2026-11-10'),true);assert.equal(isValidDateOnly('2026-02-30'),false);assert.equal(isValidDateOnly('2026-2-03'),false);assert.equal(isValidDateOnly('2026-01-01T00:00:00Z'),false);assert.equal(isValidDateOnly(null),false);});
