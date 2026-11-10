@@ -5,6 +5,8 @@ function isSafeHttpsUrl(value) {
   catch { return false; }
 }
 
+export function isValidDateOnly(value) { if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false; const parsed = new Date(value + 'T00:00:00.000Z'); return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value; }
+
 export function canBroadcastTrack(track, now = new Date()) {
   if (!track || track.is_active === false) return { allowed: false, reason: 'Track is inactive.' };
   if (track.license_verified !== true) return { allowed: false, reason: 'License has not been verified.' };
@@ -16,8 +18,7 @@ export function canBroadcastTrack(track, now = new Date()) {
   if (typeof track.audio_file_path !== 'string' || !/^uploads\/[a-f0-9-]{36}\.mp3$/i.test(track.audio_file_path)) return { allowed: false, reason: 'A normalized managed MP3 upload is required for live broadcasting.' };
   if (track.license_expires_at) {
     const expiryDate = String(track.license_expires_at).slice(0, 10);
-    const parsed = new Date(expiryDate + 'T00:00:00.000Z');
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(expiryDate) || !Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== expiryDate || expiryDate < now.toISOString().slice(0, 10)) {
+    if (!isValidDateOnly(expiryDate) || expiryDate < now.toISOString().slice(0, 10)) {
       return { allowed: false, reason: 'License is expired or has an invalid date.' };
     }
   }
