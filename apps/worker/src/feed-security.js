@@ -1,4 +1,5 @@
 import { lookup } from 'node:dns/promises';
+import https from 'node:https';
 import net from 'node:net';
 
 function privateIPv4(ip) {
@@ -43,4 +44,75 @@ export async function createPinnedLookup(host, resolver = lookup) {
     if (!candidates.length) return callback(new Error('No approved address for feed host'));
     callback(null, candidates[0].address, candidates[0].family);
   };
+}
+
+
+export async function downloadPinnedHttps(value, options = {}) {
+  const url = new URL(value);
+  if (url.protocol !== 'https:' || !url.hostname || url.username || url.password) {
+    throw new Error('Only credential-free HTTPS feed URLs are allowed.');
+  }
+  const maxBytes = Number.isFinite(options.maxBytes) ? Math.max(1, options.maxBytes) : 1_500_000;
+  const timeoutMs = Number.isFinite(options.timeoutMs) ? Math.max(1000, options.timeoutMs) : 12_000;
+  const lookupFunction = options.lookup || lookup;
+  const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, '');
+  const pinnedLookup = await createPinnedLookup(hostname, lookupFunction);
+
+  return new Promise((resolveResponse, rejectResponse) => {
+    let settled = false;
+    const finish = (error, value) => {
+      if (settled) return;
+      settled = true;
+      if (error) rejectResponse(error);
+      else resolveResponse(value);
+    };
+
+    const request = https.get(url, {
+      lookup: pinnedLookup,
+      signal: AbortSignal.timeout(timeoutMs),
+      headers: {
+        'user-agent': 'WAYLINE-RADIO-Collector/1.0',
+        'accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml',
+        'accept-encoding': 'identity'
+      }
+    }, response => {
+      const status = Number(response.statusCode || 0);
+      if (status < 200 || status >= 300) {
+        response.resume();
+        finish(new Error('Feed returned HTTP ' + status));
+        return;
+      }
+
+      const encoding = String(response.headers['content-encoding'] || 'identity').toLowerCase();
+      if (encoding !== 'identity') {
+        response.destroy();
+        finish(new Error('Compressed feed responses are not accepted.'));
+        return;
+      }
+
+      const declared = Number(response.headers['content-length'] || 0);
+      if (declared > maxBytes) {
+        response.destroy();
+        finish(new Error('Feed exceeds ' + maxBytes + ' bytes.'));
+        return;
+      }
+
+      const chunks = [];
+      let total = 0;
+      response.on('data', chunk => {
+        total += chunk.length;
+        if (total > maxBytes) {
+          response.destroy();
+          finish(new Error('Feed exceeds ' + maxBytes + ' bytes.'));
+          return;
+        }
+        chunks.push(chunk);
+      });
+      response.once('end', () => finish(null, Buffer.concat(chunks, total)));
+      response.once('error', error => finish(error));
+    });
+
+    request.setTimeout(timeoutMs, () => request.destroy(new Error('Feed request timed out.')));
+    request.once('error', error => finish(error));
+  });
 }
