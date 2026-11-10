@@ -40,3 +40,8 @@ test('feed validation blocks reserved IPv4 and special-purpose IPv6 ranges',()=>
   for(const ip of ['[2001:db8::1]','[2001:10::1]','[2001:20::1]','[64:ff9b::1]']) assert.equal(validateFeedUrl('https://'+ip+'/feed').valid,false,ip);
   assert.equal(validateFeedUrl('https://198.51.99.1/feed').valid,true);
 });
+
+test('rights-cleared tracks may use a managed audio file without a public audio URL',()=>{
+  assert.equal(canBroadcastTrack({...eligible,audio_url:null,audio_file_path:'uploads/4d1f4d12-03d6-4c5f-9d4f-5d9c2c9b11a1.mp3'}).allowed,true);
+  assert.equal(canBroadcastTrack({...eligible,audio_url:null,audio_file_path:null}).allowed,false);
+});
