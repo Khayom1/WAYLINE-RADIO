@@ -12,7 +12,8 @@
     "worker": "node apps/worker/src/collector.js",
     "create-admin": "node scripts/create-admin.mjs",
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check apps/api/src/server.js && node --check apps/api/src/policy.js && node --check apps/worker/src/collector.js && node --check scripts/create-admin.mjs && node --check apps/web/js/dashboard.js && node --check apps/web/js/player.js"
+    "check": "node --check apps/api/src/server.js && node --check apps/api/src/policy.js && node --check apps/api/src/media.js && node --check apps/api/src/migrations.js && node --check apps/worker/src/collector.js && node --check apps/worker/src/broadcaster.js && node --check apps/worker/src/broadcast-policy.js && node --check scripts/create-admin.mjs && node --check apps/web/js/dashboard.js && node --check apps/web/js/player.js",
+    "broadcaster": "node apps/worker/src/broadcaster.js"
   },
   "dependencies": {
     "pg": "^8.16.3"
