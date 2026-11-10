@@ -15,9 +15,9 @@ To make the generated announcement audio available to an AzuraCast AutoDJ:
 3. In AzuraCast Media Manager, assign each company/language folder to the appropriate playlist. AutoDJ only plays files that belong to a playlist.
 4. Confirm the stream is audible and verify playlist scheduling in AzuraCast before enabling the public station URL.
 
-Approved information/announcements are converted into one MP3 per language. Newly generated files are queued for the AutoDJ folder/playlist. No audio is generated until a TTS provider is explicitly configured. Translations must be reviewed and completed first.
+Approved information/announcements are converted into one MP3 per language. The spoken content begins with a disclosure that the narration is AI-generated. Newly generated files are written to per-company/per-language folders; an operator must add those folders to AutoDJ playlists. No audio is generated until a TTS provider is configured. Translations must be reviewed and completed first. OpenAI currently documents that `gpt-4o-mini-tts` will shut down on January 6, 2027; the Speech API example here is a temporary adapter and must be migrated before that date. The documented successor is a Realtime API model, not a drop-in `/v1/audio/speech` replacement.
 
-AzuraCast docs: [API authentication](https://www.azuracast.com/docs/developers/apis/) · [Media management and AutoDJ playlists](https://www.azuracast.com/docs/user-guide/media-management/).
+AzuraCast docs: [API authentication](https://www.azuracast.com/docs/developers/apis/) · [Media management and AutoDJ playlists](https://www.azuracast.com/docs/user-guide/media-management/). OpenAI TTS docs: [Text to speech](https://developers.openai.com/api/docs/guides/text-to-speech).
 
 ## Required production checks
 - Test each public stream URL from a mobile network.

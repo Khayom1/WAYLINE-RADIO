@@ -27,7 +27,7 @@ WAYLINE RADIO is designed around separate company stations (starting with CNU Ra
 docker compose exec api node scripts/create-admin.mjs
 ```
 
-6. Add the user-facing admin login through the API client or an API tool. The current static control center includes a local demo mode; backend endpoints are documented in [docs/API.md](docs/API.md).
+6. Open `/admin`, select **Connect API**, and sign in using the administrator email/password created above. The control center also offers an isolated local demo mode.
 
 ## Mobile / Termux development
 
@@ -43,7 +43,7 @@ The listener app plays an actual audio stream only when a station has a valid `s
 
 ## Important boundaries
 
-This is a deployable application foundation, not a hosted radio service. No cloud instance, domain, TLS certificate, media server, TTS vendor, feed credentials or music licenses are supplied by the repository. RSS collection is automatic after deployment and source configuration; story approval is intentionally human-controlled. Three-language announcements are stored separately and require complete translations before approval. Automatic translation and voice synthesis need a separately configured provider and are not represented as active in this build.
+This is a deployable application foundation, not a hosted radio service. No cloud instance, domain, TLS certificate, media server, TTS vendor, feed credentials or music licenses are supplied by the repository. RSS collection is automatic after deployment and source configuration; story approval is intentionally human-controlled. Three-language announcements are stored separately and require complete translations before approval. Translation is entered and reviewed by an editor; an automatic translation provider is not configured. Voice synthesis requires a separately configured TTS key. The current example uses the Speech API model `gpt-4o-mini-tts`, which OpenAI has scheduled to shut down on January 6, 2027; replace the worker adapter before that date.
 
 ## License
 
