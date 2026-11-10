@@ -1,7 +1,7 @@
 import { relative, resolve, sep } from 'node:path';
 
 export function managedAudioPath(value, root) {
-  if (typeof value !== 'string' || !/^uploads\/[a-f0-9-]{36}\.(mp3|m4a|mp4|aac|wav|flac|ogg|opus|webm)$/i.test(value)) return null;
+  if (typeof value !== 'string' || !/^uploads\/[a-f0-9-]{36}\.mp3$/i.test(value)) return null;
   const base = resolve(root);
   const target = resolve(base, value);
   if (!target.startsWith(base + sep) || !relative(base, target).startsWith('uploads' + sep)) return null;
