@@ -25,7 +25,9 @@ function isPrivateIPv4(ip) {
   return p[0] === 10 || p[0] === 127 || p[0] === 0 ||
     (p[0] === 169 && p[1] === 254) ||
     (p[0] === 172 && p[1] >= 16 && p[1] <= 31) ||
-    (p[0] === 192 && p[1] === 168) ||
+    (p[0] === 192 && (p[1] === 0 || p[1] === 2 || p[1] === 168)) ||
+    (p[0] === 198 && (p[1] === 18 || p[1] === 19 || p[1] === 51)) ||
+    (p[0] === 203 && p[1] === 0 && p[2] === 113) ||
     (p[0] === 100 && p[1] >= 64 && p[1] <= 127) || p[0] >= 224;
 }
 
@@ -35,8 +37,8 @@ function isPrivateIPv6(host) {
   // (for example, ::ffff:127.0.0.1 becomes ::ffff:7f00:1).
   // Reject the entire mapped range rather than risk bypassing IPv4 checks.
   if (h.startsWith('::ffff:')) return true;
-  if (h === '::' || h === '::1' || h.startsWith('fc') || h.startsWith('fd') ||
-      /^fe[89ab]/.test(h) || h.startsWith('ff') || h.startsWith('2001:db8:')) return true;
+  const first = Number.parseInt(h.split(':')[0] || '0', 16);
+  if (first < 0x2000 || first > 0x3fff || h.startsWith('2001:db8:') || h.startsWith('2001:10:') || h.startsWith('2001:20:')) return true;
   return false;
 }
 
