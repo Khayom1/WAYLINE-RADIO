@@ -13,7 +13,7 @@ export function canBroadcastTrack(track, now = new Date()) {
   if (!track.license_type || !String(track.license_type).trim()) return { allowed: false, reason: 'License type is missing.' };
   if (!isSafeHttpsUrl(track.license_proof_url)) return { allowed: false, reason: 'A valid HTTPS license proof URL is required.' };
   if (!track.rights_holder || !String(track.rights_holder).trim()) return { allowed: false, reason: 'Rights holder is missing.' };
-  if (!isSafeHttpsUrl(track.audio_url)) return { allowed: false, reason: 'A valid HTTPS audio URL is required.' };
+  if (!track.audio_file_path && !isSafeHttpsUrl(track.audio_url)) return { allowed: false, reason: 'Upload a managed audio file or provide a valid HTTPS audio URL.' };
   if (track.license_expires_at) {
     const expiryDate = String(track.license_expires_at).slice(0, 10);
     const parsed = new Date(expiryDate + 'T00:00:00.000Z');
