@@ -19,7 +19,7 @@
   $('radioAudio').addEventListener('error',()=>{$('playerMessage').textContent='Stream unavailable. Check the media server.';});
   $('radioAudio').addEventListener('playing',()=>{$('liveChip').classList.add('live');});
   $('languageSelect').addEventListener('change',e=>{lang=e.target.value;localStorage.setItem('wayline-language',lang);applyLang();});
-  try{const raw=JSON.parse(localStorage.getItem(KEY));const announcements=(raw?.announcements||[]).filter(a=>a.status==='approved'&&a.companyId);if(announcements.length){$('publicAnnouncements').classList.remove('hidden');$('messageList').innerHTML=announcements.slice(0,5).map(a=>'<article class="message-card"><strong>'+escape(a['title_'+lang]||a.title_en||a.title_ru||a.title_tg)+'</strong><p>'+escape(a['body_'+lang]||a.body_en||a.body_ru||a.body_tg)+'</p></article>').join('');}}catch{}
+  async function loadAnnouncements(){let announcements=[];try{const response=await fetch('/api/v1/public/announcements?limit=8',{headers:{accept:'application/json'}});if(response.ok){const data=await response.json();announcements=data.announcements||[];}}catch{}if(!announcements.length){try{const raw=JSON.parse(localStorage.getItem(KEY));announcements=(raw?.announcements||[]).filter(a=>a.status==='approved'&&a.companyId);}catch{}}if(announcements.length){$('publicAnnouncements').classList.remove('hidden');$('messageList').innerHTML=announcements.slice(0,8).map(a=>'<article class="message-card"><strong>'+escape(a['title_'+lang]||a.title_en||a.title_ru||a.title_tg)+'</strong><p>'+escape(a['body_'+lang]||a.body_en||a.body_ru||a.body_tg)+'</p><small>'+escape(a.company_name||'')+'</small></article>').join('');}else{$('publicAnnouncements').classList.add('hidden');$('messageList').innerHTML='';}}
   if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
-  applyLang();loadStations();
+  applyLang();loadStations();loadAnnouncements();
 })();
