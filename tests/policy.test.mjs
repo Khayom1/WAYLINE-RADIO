@@ -2,10 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { canBroadcastTrack, validateFeedUrl } from '../apps/api/src/policy.js';
 
-const eligible={is_active:true,license_verified:true,commercial_allowed:true,streaming_allowed:true,license_type:'CC BY 4.0',audio_url:'https://cdn.example.org/song.mp3',license_proof_url:'https://licenses.example.org/proof',rights_holder:'Test Label'};
+const eligible={is_active:true,license_verified:true,commercial_allowed:true,streaming_allowed:true,license_type:'CC BY 4.0',audio_file_path:'uploads/4d1f4d12-03d6-4c5f-9d4f-5d9c2c9b11a1.mp3',license_proof_url:'https://licenses.example.org/proof',rights_holder:'Test Label'};
 test('track is eligible only when every rights condition is explicit',()=>{assert.equal(canBroadcastTrack(eligible).allowed,true);});
 test('unverified, non-commercial, non-streaming, insecure URLs and expired tracks are blocked',()=>{
-  for(const patch of [{license_verified:false},{commercial_allowed:false},{streaming_allowed:false},{license_expires_at:'2000-01-01'},{audio_url:'http://cdn.example.org/song.mp3'},{license_proof_url:'http://licenses.example.org/proof'},{audio_url:'https://user:pass@cdn.example.org/song.mp3'}])assert.equal(canBroadcastTrack({...eligible,...patch}).allowed,false);
+  for(const patch of [{license_verified:false},{commercial_allowed:false},{streaming_allowed:false},{license_expires_at:'2000-01-01'},{audio_file_path:null},{audio_file_path:'../../etc/passwd'},{license_proof_url:'http://licenses.example.org/proof'},{license_proof_url:'https://user:pass@licenses.example.org/proof'}])assert.equal(canBroadcastTrack({...eligible,...patch}).allowed,false);
 });
 test('RSS feed URLs must use HTTPS and public hosts',()=>{
   assert.equal(validateFeedUrl('https://feeds.example.org/rss.xml').valid,true);
@@ -41,7 +41,8 @@ test('feed validation blocks reserved IPv4 and special-purpose IPv6 ranges',()=>
   assert.equal(validateFeedUrl('https://198.51.99.1/feed').valid,true);
 });
 
-test('rights-cleared tracks may use a managed audio file without a public audio URL',()=>{
-  assert.equal(canBroadcastTrack({...eligible,audio_url:null,audio_file_path:'uploads/4d1f4d12-03d6-4c5f-9d4f-5d9c2c9b11a1.mp3'}).allowed,true);
-  assert.equal(canBroadcastTrack({...eligible,audio_url:null,audio_file_path:null}).allowed,false);
+test('live broadcast requires a normalized managed MP3 upload',()=>{
+  assert.equal(canBroadcastTrack(eligible).allowed,true);
+  assert.equal(canBroadcastTrack({...eligible,audio_file_path:null,audio_url:'https://cdn.example.org/song.mp3'}).allowed,false);
+  assert.equal(canBroadcastTrack({...eligible,audio_file_path:'uploads/4d1f4d12-03d6-4c5f-9d4f-5d9c2c9b11a1.wav'}).allowed,false);
 });
