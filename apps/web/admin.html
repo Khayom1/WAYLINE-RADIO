@@ -87,6 +87,22 @@
     </div>
   </main>
 </div>
+
+<dialog id="apiLoginDialog" class="modal-dialog" aria-labelledby="apiLoginTitle">
+  <form id="apiLoginForm" class="modal-form">
+    <div class="eyebrow">SECURE CONNECTION</div>
+    <h2 id="apiLoginTitle">Connect to WAYLINE API</h2>
+    <p class="muted">Sign in to manage shared company stations and broadcast content.</p>
+    <label for="apiLoginEmail">Administrator email</label>
+    <input id="apiLoginEmail" name="email" type="email" autocomplete="username" required maxlength="254" placeholder="admin@example.com">
+    <label for="apiLoginPassword">Password</label>
+    <input id="apiLoginPassword" name="password" type="password" autocomplete="current-password" required maxlength="256" placeholder="Enter your password">
+    <div class="modal-actions">
+      <button type="button" class="secondary" id="apiLoginCancel">Cancel</button>
+      <button type="submit" class="primary">Connect securely</button>
+    </div>
+  </form>
+</dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="js/config.js"></script><script src="js/dashboard.js"></script>
 </body></html>
