@@ -14,32 +14,99 @@ services:
       timeout: 5s
       retries: 20
 
+  icecast:
+    build: ./docker/icecast
+    restart: unless-stopped
+    environment:
+      ICECAST_SOURCE_PASSWORD: ${ICECAST_SOURCE_PASSWORD:?Set ICECAST_SOURCE_PASSWORD in .env}
+      ICECAST_ADMIN_PASSWORD: ${ICECAST_ADMIN_PASSWORD:?Set ICECAST_ADMIN_PASSWORD in .env}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/status-json.xsl"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
   api:
     build: .
     restart: unless-stopped
     env_file: .env
     environment:
       DATABASE_URL: postgresql://wayline:${POSTGRES_PASSWORD}@db:5432/wayline
+      PORT: 8080
+      MEDIA_DIR: /var/wayline-media
+      ICECAST_INTERNAL_URL: http://icecast:8000
       AUTO_MIGRATE: "true"
     depends_on:
       db:
         condition: service_healthy
+      icecast:
+        condition: service_healthy
+    volumes:
+      - wayline_media:/var/wayline-media
+    expose:
+      - "8080"
     ports:
-      - "8080:8080"
+      - "127.0.0.1:${API_HOST_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  broadcaster:
+    build: .
+    restart: unless-stopped
+    command: ["npm", "run", "broadcaster"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://wayline:${POSTGRES_PASSWORD}@db:5432/wayline
+      MEDIA_DIR: /var/wayline-media
+      ICECAST_HOST: icecast
+      ICECAST_PORT: 8000
+      ICECAST_SOURCE_PASSWORD: ${ICECAST_SOURCE_PASSWORD:?Set ICECAST_SOURCE_PASSWORD in .env}
+    volumes:
+      - wayline_media:/var/wayline-media
+    depends_on:
+      api:
+        condition: service_healthy
+      icecast:
+        condition: service_healthy
 
   collector:
     build: .
     restart: unless-stopped
-    command: ["npm","run","worker"]
+    command: ["npm", "run", "worker"]
     env_file: .env
     environment:
       DATABASE_URL: postgresql://wayline:${POSTGRES_PASSWORD}@db:5432/wayline
       TTS_OUTPUT_DIR: /var/wayline-tts
     volumes:
-      - ${TTS_OUTPUT_HOST_DIR:-./storage/wayline-tts}:/var/wayline-tts
+      - wayline_tts:/var/wayline-tts
     depends_on:
-      db:
+      api:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      PUBLIC_DOMAIN: ${PUBLIC_DOMAIN:-localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
         condition: service_healthy
 
 volumes:
   wayline_pg:
+  wayline_media:
+  wayline_tts:
+  caddy_data:
+  caddy_config:

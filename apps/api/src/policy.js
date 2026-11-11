@@ -1,17 +1,26 @@
 import net from 'node:net';
 
+function isSafeHttpsUrl(value) {
+  try { const url = new URL(value); return url.protocol === 'https:' && Boolean(url.hostname) && !url.username && !url.password; }
+  catch { return false; }
+}
+
+export function isValidDateOnly(value) { if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false; const parsed = new Date(value + 'T00:00:00.000Z'); return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value; }
+
 export function canBroadcastTrack(track, now = new Date()) {
   if (!track || track.is_active === false) return { allowed: false, reason: 'Track is inactive.' };
   if (track.license_verified !== true) return { allowed: false, reason: 'License has not been verified.' };
   if (track.commercial_allowed !== true) return { allowed: false, reason: 'Commercial broadcast rights are not confirmed.' };
   if (track.streaming_allowed !== true) return { allowed: false, reason: 'Internet streaming rights are not confirmed.' };
   if (!track.license_type || !String(track.license_type).trim()) return { allowed: false, reason: 'License type is missing.' };
-  if (!track.license_proof_url || !/^https?:\/\//i.test(track.license_proof_url)) return { allowed: false, reason: 'A license proof URL is missing.' };
+  if (!isSafeHttpsUrl(track.license_proof_url)) return { allowed: false, reason: 'A valid HTTPS license proof URL is required.' };
   if (!track.rights_holder || !String(track.rights_holder).trim()) return { allowed: false, reason: 'Rights holder is missing.' };
-  if (!track.audio_url || !/^https?:\/\//i.test(track.audio_url)) return { allowed: false, reason: 'A valid audio URL is required.' };
+  if (typeof track.audio_file_path !== 'string' || !/^uploads\/[a-f0-9-]{36}\.mp3$/i.test(track.audio_file_path)) return { allowed: false, reason: 'A normalized managed MP3 upload is required for live broadcasting.' };
   if (track.license_expires_at) {
-    const expiry = new Date(track.license_expires_at);
-    if (!Number.isFinite(expiry.getTime()) || expiry < now) return { allowed: false, reason: 'License is expired or has an invalid date.' };
+    const expiryDate = String(track.license_expires_at).slice(0, 10);
+    if (!isValidDateOnly(expiryDate) || expiryDate < now.toISOString().slice(0, 10)) {
+      return { allowed: false, reason: 'License is expired or has an invalid date.' };
+    }
   }
   return { allowed: true, reason: 'Rights metadata passed the configured checks. Human review of the proof is still required.' };
 }
@@ -22,8 +31,21 @@ function isPrivateIPv4(ip) {
   return p[0] === 10 || p[0] === 127 || p[0] === 0 ||
     (p[0] === 169 && p[1] === 254) ||
     (p[0] === 172 && p[1] >= 16 && p[1] <= 31) ||
-    (p[0] === 192 && p[1] === 168) ||
+    (p[0] === 192 && ((p[1] === 0 && (p[2] === 0 || p[2] === 2)) || (p[1] === 2 && p[2] === 0) || p[1] === 168)) ||
+    (p[0] === 198 && ((p[1] === 18 || p[1] === 19) || (p[1] === 51 && p[2] === 100))) ||
+    (p[0] === 203 && p[1] === 0 && p[2] === 113) ||
     (p[0] === 100 && p[1] >= 64 && p[1] <= 127) || p[0] >= 224;
+}
+
+function isPrivateIPv6(host) {
+  const h = host.toLowerCase();
+  // URL.hostname canonicalizes IPv4-mapped IPv6 literals to hexadecimal
+  // (for example, ::ffff:127.0.0.1 becomes ::ffff:7f00:1).
+  // Reject the entire mapped range rather than risk bypassing IPv4 checks.
+  if (h.startsWith('::ffff:')) return true;
+  const first = Number.parseInt(h.split(':')[0] || '0', 16);
+  if (first < 0x2000 || first > 0x3fff || h.startsWith('2001:db8:') || h.startsWith('2001:10:') || h.startsWith('2001:20:') || h.startsWith('2001:2::') || h.startsWith('2001:2:0:')) return true;
+  return false;
 }
 
 export function validateFeedUrl(value) {
@@ -36,7 +58,7 @@ export function validateFeedUrl(value) {
   }
   const ipType = net.isIP(host);
   if (ipType === 4 && isPrivateIPv4(host)) return { valid: false, reason: 'Private IP addresses are not allowed.' };
-  if (ipType === 6 && (host === '::1' || host.startsWith('fc') || host.startsWith('fd') || host.startsWith('fe80'))) {
+  if (ipType === 6 && isPrivateIPv6(host)) {
     return { valid: false, reason: 'Private IP addresses are not allowed.' };
   }
   url.username = '';
