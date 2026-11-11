@@ -19,7 +19,8 @@ function privateIPv6(ip) {
   if (host.startsWith('::ffff:')) return true;
   const first = Number.parseInt(host.split(':')[0] || '0', 16);
   return first < 0x2000 || first > 0x3fff ||
-    host.startsWith('2001:db8:') || host.startsWith('2001:10:') || host.startsWith('2001:20:');
+    host.startsWith('2001:db8:') || host.startsWith('2001:10:') || host.startsWith('2001:20:') ||
+    host.startsWith('2001:2::') || host.startsWith('2001:2:0:');
 }
 
 function blockedAddress(ip) {
