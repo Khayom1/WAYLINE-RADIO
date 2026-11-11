@@ -5,7 +5,7 @@ import { createPinnedLookup } from '../apps/worker/src/feed-security.js';
 test('feed DNS resolver rejects loopback, private, reserved and mixed public/private DNS answers', async () => {
   for (const address of ['127.0.0.1', '10.0.0.4', '172.18.0.1', '192.168.1.1',
     '169.254.1.1', '100.64.0.1', '198.18.0.1', '224.0.0.1', '::1',
-    'fd00::1', 'fe80::1', '::ffff:127.0.0.1', '2001:db8::1']) {
+    'fd00::1', 'fe80::1', '::ffff:127.0.0.1', '2001:db8::1', '2001:2::1']) {
     await assert.rejects(
       createPinnedLookup('feed.example', async () => [{ address, family: address.includes(':') ? 6 : 4 }]),
       /private or reserved/
