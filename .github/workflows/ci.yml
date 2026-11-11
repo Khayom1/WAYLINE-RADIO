@@ -1,13 +1,46 @@
 name: WAYLINE CI
 
 on:
+  # Feature branches are validated through pull_request only, avoiding duplicate runs.
   push:
-    branches: [main, 'feat/**']
+    branches: [main]
+    paths:
+      - ".github/workflows/ci.yml"
+      - "apps/**"
+      - "database/**"
+      - "docker/**"
+      - "scripts/**"
+      - "tests/**"
+      - "package.json"
+      - "package-lock.json"
+      - "Dockerfile"
+      - "docker-compose.yml"
+      - "Caddyfile"
+      - ".env.example"
   pull_request:
     branches: [main]
+    paths:
+      - ".github/workflows/ci.yml"
+      - "apps/**"
+      - "database/**"
+      - "docker/**"
+      - "scripts/**"
+      - "tests/**"
+      - "package.json"
+      - "package-lock.json"
+      - "Dockerfile"
+      - "docker-compose.yml"
+      - "Caddyfile"
+      - ".env.example"
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+# Cancel obsolete runs for the same PR/branch when a newer commit arrives.
+concurrency:
+  group: wayline-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   node-validation:
