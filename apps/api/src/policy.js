@@ -44,7 +44,7 @@ function isPrivateIPv6(host) {
   // Reject the entire mapped range rather than risk bypassing IPv4 checks.
   if (h.startsWith('::ffff:')) return true;
   const first = Number.parseInt(h.split(':')[0] || '0', 16);
-  if (first < 0x2000 || first > 0x3fff || h.startsWith('2001:db8:') || h.startsWith('2001:10:') || h.startsWith('2001:20:')) return true;
+  if (first < 0x2000 || first > 0x3fff || h.startsWith('2001:db8:') || h.startsWith('2001:10:') || h.startsWith('2001:20:') || h.startsWith('2001:2::') || h.startsWith('2001:2:0:')) return true;
   return false;
 }
 
